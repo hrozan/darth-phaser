@@ -1,12 +1,14 @@
 #include "PluginEditor.h"
 
 #include "Parameters.h"
-#include "Presets.h"
+#include "PresetManager.h"
+#include "gui/IconButton.h"
 #include "gui/Knob.h"
 #include "gui/LevelMeter.h"
 #include "gui/LfoScope.h"
 #include "gui/PanelSection.h"
 #include "gui/SegmentedControl.h"
+#include "gui/StereoOffsetDisplay.h"
 #include "gui/Theme.h"
 
 namespace
@@ -108,35 +110,29 @@ private:
     bool on = true;
 };
 
-/** Preset stepper shown in the header. */
+/** Preset name display with prev/next arrows, backed by the PresetManager. */
 class PresetBar final : public juce::Component
 {
 public:
-    explicit PresetBar (juce::AudioProcessorValueTreeState& s) : state (s)
+    explicit PresetBar (PresetManager& m) : manager (m)
     {
         setMouseCursor (juce::MouseCursor::PointingHandCursor);
     }
 
     void mouseDown (const juce::MouseEvent& e) override
     {
-        const auto arrow = 28;
-        const auto total = static_cast<int> (Presets::factory().size());
+        constexpr int arrow = 28;
 
         if (e.x < arrow)
-            index = (index + total - 1) % total;
+            manager.step (-1);
         else if (e.x > getWidth() - arrow)
-            index = (index + 1) % total;
-        else
-            return;
-
-        Presets::apply (state, index);
-        repaint();
+            manager.step (1);
     }
 
     void paint (juce::Graphics& g) override
     {
         auto bounds = getLocalBounds().toFloat();
-        const auto arrow = 28.0f;
+        constexpr float arrow = 28.0f;
 
         g.setColour (juce::Colour (0xff0b0b0e));
         g.fillRoundedRectangle (bounds, 4.0f);
@@ -153,8 +149,8 @@ public:
 
         g.setColour (Theme::amberBright);
         g.setFont (Theme::label (11.0f, true, 0.2f));
-        g.drawText (Presets::factory()[static_cast<size_t> (index)].name,
-                    display.toNearestInt(), juce::Justification::centred, false);
+        g.drawText (manager.getCurrentName().toUpperCase(), display.toNearestInt(),
+                    juce::Justification::centred, false);
 
         g.setColour (Theme::textDim);
         g.setFont (juce::FontOptions (13.0f));
@@ -165,8 +161,48 @@ public:
     }
 
 private:
-    juce::AudioProcessorValueTreeState& state;
-    int index = 0;
+    PresetManager& manager;
+};
+
+/** FREE plus the tempo divisions in one row, driving both sync and division. */
+class SyncSelector final : public juce::Component
+{
+public:
+    SyncSelector (juce::RangedAudioParameter& syncParam, juce::RangedAudioParameter& divisionParam)
+        : segment (Params::syncChoices),
+          syncAttachment (syncParam,
+                          [this] (float v) { syncOn = v > 0.5f; refresh(); }, nullptr),
+          divisionAttachment (divisionParam,
+                              [this] (float v) { division = juce::roundToInt (v); refresh(); }, nullptr)
+    {
+        addAndMakeVisible (segment);
+
+        segment.onSelect = [this] (int index)
+        {
+            if (index == 0)
+            {
+                syncAttachment.setValueAsCompleteGesture (0.0f);
+            }
+            else
+            {
+                divisionAttachment.setValueAsCompleteGesture (static_cast<float> (index - 1));
+                syncAttachment.setValueAsCompleteGesture (1.0f);
+            }
+        };
+
+        syncAttachment.sendInitialUpdate();
+        divisionAttachment.sendInitialUpdate();
+    }
+
+    void resized() override { segment.setBounds (getLocalBounds()); }
+
+private:
+    void refresh() { segment.setSelectedIndex (syncOn ? division + 1 : 0); }
+
+    SegmentedControl segment;
+    juce::ParameterAttachment syncAttachment, divisionAttachment;
+    bool syncOn = false;
+    int division = 2;
 };
 }
 
@@ -175,9 +211,9 @@ class DarthPhaserEditor::Content final : public juce::Component
 {
 public:
     explicit Content (DarthPhaserProcessor& p)
-        : state (p.getValueTreeState()),
+        : proc (p), state (p.getValueTreeState()),
           modulation ("MODULATION"), phaseEngine ("PHASE ENGINE"),
-          lfoPanel ("LFO / SWEEP", false), outputPanel ("OUTPUT"),
+          lfoPanel ("LFO / SWEEP", false), stereoPanel ("STEREO"), outputPanel ("OUTPUT"),
           speed    (paramRef (state, ParamID::rate),        "SPEED",    Theme::amber, true),
           depth    (paramRef (state, ParamID::depth),       "DEPTH",    Theme::amber),
           stereo   (paramRef (state, ParamID::stereoPhase), "PHASE",    Theme::saber),
@@ -189,26 +225,32 @@ public:
           level    (paramRef (state, ParamID::level),       "LEVEL",    Theme::amber),
           waveform (paramRef (state, ParamID::waveform), { "SINE", "TRI", "SQR", "RND" }),
           stages   (paramRef (state, ParamID::stages),   { "2", "4", "6", "8", "12" }),
-          sync     (paramRef (state, ParamID::sync),     { "FREE", "SYNC" }),
-          division (paramRef (state, ParamID::division), { "1/1", "1/2", "1/4", "1/8", "1/16", "1/32", "1/4T", "1/8T" }),
-          waveformCaption ("WAVEFORM"), stagesCaption ("STAGES"), syncCaption ("SYNC"),
+          sync     (paramRef (state, ParamID::sync), paramRef (state, ParamID::division)),
+          waveformCaption ("WAVEFORM"), stagesCaption ("STAGES"),
+          syncCaption ("SYNC"), offsetCaption ("L / R OFFSET"),
           scope (p),
+          offsetDisplay (paramRef (state, ParamID::stereoPhase)),
           meter ([&p] (int ch) { return p.getOutputPeak (ch); }),
-          presets (p.getValueTreeState()),
+          presets (p.getPresetManager()),
+          newPreset   (IconButton::Icon::plus,  "New preset",    Theme::amber),
+          savePreset  (IconButton::Icon::save,  "Save preset",   Theme::text.withAlpha (0.75f)),
+          deletePreset(IconButton::Icon::trash, "Delete preset", Theme::text.withAlpha (0.75f)),
           power (paramRef (state, ParamID::bypass))
     {
         if (auto xml = juce::parseXML (helmetSvg))
             helmet = juce::Drawable::createFromSVG (*xml);
 
-        for (auto* panel : { &modulation, &phaseEngine, &lfoPanel, &outputPanel })
+        for (auto* panel : { &modulation, &phaseEngine, &lfoPanel, &stereoPanel, &outputPanel })
             addAndMakeVisible (panel);
 
         addAndMakeVisible (presets);
+        addAndMakeVisible (newPreset);
+        addAndMakeVisible (savePreset);
+        addAndMakeVisible (deletePreset);
         addAndMakeVisible (power);
 
         modulation.addAndMakeVisible (speed);
         modulation.addAndMakeVisible (depth);
-        modulation.addAndMakeVisible (stereo);
         modulation.addAndMakeVisible (waveformCaption);
         modulation.addAndMakeVisible (waveform);
 
@@ -221,14 +263,29 @@ public:
 
         lfoPanel.addAndMakeVisible (syncCaption);
         lfoPanel.addAndMakeVisible (sync);
-        lfoPanel.addAndMakeVisible (division);
         lfoPanel.addAndMakeVisible (scope);
+
+        stereoPanel.addAndMakeVisible (stereo);
+        stereoPanel.addAndMakeVisible (offsetCaption);
+        stereoPanel.addAndMakeVisible (offsetDisplay);
 
         outputPanel.addAndMakeVisible (mix);
         outputPanel.addAndMakeVisible (level);
         outputPanel.addAndMakeVisible (meter);
 
+        newPreset.onClick    = [this] { promptForName(); };
+        savePreset.onClick   = [this] { proc.getPresetManager().overwriteCurrent(); };
+        deletePreset.onClick = [this] { confirmDelete(); };
+
+        proc.getPresetManager().onChange = [this] { presetChanged(); };
+        presetChanged();
+
         setSize (DarthPhaserEditor::designWidth, DarthPhaserEditor::designHeight);
+    }
+
+    ~Content() override
+    {
+        proc.getPresetManager().onChange = nullptr;
     }
 
     void resized() override
@@ -243,39 +300,49 @@ public:
         auto rowA = area.removeFromTop (216);
         area.removeFromTop (gap);
 
-        auto footerArea = area.removeFromBottom (14);
-        footer = footerArea;
+        footer = area.removeFromBottom (14);
         area.removeFromBottom (4);
 
         auto rowB = area;
 
-        modulation.setBounds (rowA.removeFromLeft (366));
+        modulation.setBounds (rowA.removeFromLeft (330));
         rowA.removeFromLeft (gap);
         phaseEngine.setBounds (rowA);
 
         lfoPanel.setBounds (rowB.removeFromLeft (640));
         rowB.removeFromLeft (gap);
+
+        stereoPanel.setBounds (rowB.removeFromTop (118));
+        rowB.removeFromTop (gap);
         outputPanel.setBounds (rowB);
 
         // ---- header ----
         auto head = header.reduced (15, 0);
         power.setBounds (head.removeFromRight (54).withSizeKeepingCentre (54, 40));
-        head.removeFromRight (12);
-        presets.setBounds (head.removeFromRight (250).withSizeKeepingCentre (250, 30));
+        head.removeFromRight (10);
+
+        auto icons = head.removeFromRight (88).withSizeKeepingCentre (88, 26);
+        newPreset.setBounds (icons.removeFromLeft (26));
+        icons.removeFromLeft (5);
+        savePreset.setBounds (icons.removeFromLeft (26));
+        icons.removeFromLeft (5);
+        deletePreset.setBounds (icons.removeFromLeft (26));
+
+        head.removeFromRight (9);
+        presets.setBounds (head.removeFromRight (240).withSizeKeepingCentre (240, 30));
 
         // ---- modulation ----
         speed.setBounds (18, 36, 108, 142);
-        depth.setBounds (152, 32, 72, 92);
-        stereo.setBounds (242, 32, 72, 92);
-        waveformCaption.setBounds (152, 136, 180, 12);
-        waveform.setBounds (152, 152, 196, 26);
+        depth.setBounds (190, 32, 72, 92);
+        waveformCaption.setBounds (148, 136, 170, 12);
+        waveform.setBounds (148, 152, 166, 26);
 
         // ---- phase engine ----
         const auto peWidth = phaseEngine.getWidth();
         stagesCaption.setBounds (16, 34, 120, 12);
         stages.setBounds (16, 50, peWidth - 32, 26);
 
-        const auto knobW = 72;
+        constexpr int knobW = 72;
         const auto span = peWidth - 32;
         const auto step = (span - 4 * knobW) / 3;
 
@@ -286,25 +353,31 @@ public:
 
         // ---- lfo ----
         auto lfoHeader = lfoPanel.getHeaderBounds().reduced (11, 2);
-        division.setBounds (lfoHeader.removeFromRight (236).withSizeKeepingCentre (236, 19));
-        lfoHeader.removeFromRight (7);
-        sync.setBounds (lfoHeader.removeFromRight (78).withSizeKeepingCentre (78, 19));
-        lfoHeader.removeFromRight (7);
+        sync.setBounds (lfoHeader.removeFromRight (198).withSizeKeepingCentre (198, 19));
+        lfoHeader.removeFromRight (8);
         syncCaption.setBounds (lfoHeader.removeFromRight (36));
 
         scope.setBounds (lfoPanel.getContentBounds().reduced (12, 11));
+
+        // ---- stereo ----
+        auto stereoContent = stereoPanel.getContentBounds();
+        stereo.setBounds (stereoContent.getX() + 14, stereoContent.getY() + 4, 68, 86);
+        offsetCaption.setBounds (stereoContent.getX() + 94, stereoContent.getY() + 7, 150, 12);
+        offsetDisplay.setBounds (stereoContent.getX() + 94, stereoContent.getY() + 23,
+                                 stereoContent.getRight() - stereoContent.getX() - 110, 52);
 
         // ---- output ----
         auto out = outputPanel.getContentBounds().reduced (16, 0);
         const auto row = juce::Rectangle<int> (out.getX(), out.getY() + (out.getHeight() - 92) / 2,
                                                out.getWidth(), 92);
+
         constexpr int groupWidth = 72 + 10 + 72 + 22 + 22;
         const auto groupX = row.getX() + (row.getWidth() - groupWidth) / 2;
 
         mix.setBounds (groupX, row.getY(), 72, 92);
         level.setBounds (groupX + 82, row.getY(), 72, 92);
-        meter.setBounds (groupX + 176, row.getY() + 4, 22, 76);
-        meterLabel = { groupX + 176, row.getY() + 84, 22, 10 };
+        meter.setBounds (groupX + 176, row.getY() + 4, 22, 72);
+        meterLabel = { groupX + 176, row.getY() + 80, 22, 10 };
     }
 
     void paint (juce::Graphics& g) override
@@ -369,21 +442,77 @@ public:
         auto versionArea = right.removeFromRight (52);
         right.removeFromRight (8);
 
-        g.drawText ("VST3  \xc2\xb7  STANDALONE", right.removeFromRight (160), juce::Justification::centredRight, false);
+        // juce::String (const char*) decodes as ASCII, so the middle dot needs the UTF-8 pointer
+        g.drawText (juce::String (juce::CharPointer_UTF8 ("VST3  \xc2\xb7  STANDALONE")),
+                    right.removeFromRight (160), juce::Justification::centredRight, false);
         g.setColour (Theme::amber.withAlpha (0.85f));
         g.drawText ("v" JucePlugin_VersionString, versionArea, juce::Justification::centredRight, false);
     }
 
 private:
+    void presetChanged()
+    {
+        const auto factory = proc.getPresetManager().currentIsFactory();
+        savePreset.setEnabled (! factory);
+        deletePreset.setEnabled (! factory);
+        presets.repaint();
+    }
+
+    void promptForName()
+    {
+        auto* window = new juce::AlertWindow ("New Preset", "Name this preset",
+                                              juce::MessageBoxIconType::NoIcon);
+        window->addTextEditor ("name", proc.getPresetManager().getCurrentName());
+        window->addButton ("Save", 1, juce::KeyPress (juce::KeyPress::returnKey));
+        window->addButton ("Cancel", 0, juce::KeyPress (juce::KeyPress::escapeKey));
+
+        juce::Component::SafePointer<Content> safeThis { this };
+        juce::Component::SafePointer<juce::AlertWindow> safeWindow { window };
+
+        window->enterModalState (true, juce::ModalCallbackFunction::create (
+            [safeThis, safeWindow] (int result)
+            {
+                if (result != 1 || safeThis == nullptr || safeWindow == nullptr)
+                    return;
+
+                safeThis->proc.getPresetManager().saveAs (safeWindow->getTextEditorContents ("name"));
+            }), true);
+    }
+
+    void confirmDelete()
+    {
+        auto& manager = proc.getPresetManager();
+
+        if (manager.currentIsFactory())
+            return;
+
+        juce::Component::SafePointer<Content> safeThis { this };
+
+        juce::AlertWindow::showOkCancelBox (
+            juce::MessageBoxIconType::WarningIcon, "Delete Preset",
+            "Move \"" + manager.getCurrentName() + "\" to the trash?",
+            "Delete", "Cancel", nullptr,
+            juce::ModalCallbackFunction::create (
+                [safeThis] (int result)
+                {
+                    if (result == 1 && safeThis != nullptr)
+                        safeThis->proc.getPresetManager().deleteCurrent();
+                }));
+    }
+
+    DarthPhaserProcessor& proc;
     juce::AudioProcessorValueTreeState& state;
 
-    PanelSection modulation, phaseEngine, lfoPanel, outputPanel;
+    PanelSection modulation, phaseEngine, lfoPanel, stereoPanel, outputPanel;
     Knob speed, depth, stereo, centre, spread, feedback, damping, mix, level;
-    SegmentedControl waveform, stages, sync, division;
-    Caption waveformCaption, stagesCaption, syncCaption;
+    ParameterSegment waveform, stages;
+    SyncSelector sync;
+    Caption waveformCaption, stagesCaption, syncCaption, offsetCaption;
     LfoScope scope;
+    StereoOffsetDisplay offsetDisplay;
     LevelMeter meter;
     PresetBar presets;
+    IconButton newPreset, savePreset, deletePreset;
     PowerLed power;
 
     std::unique_ptr<juce::Drawable> helmet;

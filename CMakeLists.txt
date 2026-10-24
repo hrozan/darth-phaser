@@ -49,14 +49,17 @@ target_sources(DarthPhaser PRIVATE
     source/Parameters.cpp
     source/PhaserEngine.cpp
     source/Presets.cpp
+    source/PresetManager.cpp
     source/PluginProcessor.cpp
     source/PluginEditor.cpp
     source/gui/DarthLookAndFeel.cpp
+    source/gui/IconButton.cpp
     source/gui/Knob.cpp
     source/gui/LevelMeter.cpp
     source/gui/LfoScope.cpp
     source/gui/PanelSection.cpp
-    source/gui/SegmentedControl.cpp)
+    source/gui/SegmentedControl.cpp
+    source/gui/StereoOffsetDisplay.cpp)
 
 target_compile_definitions(DarthPhaser PUBLIC
     JUCE_WEB_BROWSER=0

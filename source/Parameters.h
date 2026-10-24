@@ -26,17 +26,15 @@ namespace Params
 inline constexpr std::array<int, 5> stageCounts { 2, 4, 6, 8, 12 };
 
 /** Cycle length in beats for each entry of the DIVISION selector. */
-inline constexpr std::array<double, 8> divisionBeats
+inline constexpr std::array<double, 3> divisionBeats
 {
-    4.0,        // 1/1
-    2.0,        // 1/2
-    1.0,        // 1/4
-    0.5,        // 1/8
-    0.25,       // 1/16
-    0.125,      // 1/32
-    1.0 / 1.5,  // 1/4T
-    0.5 / 1.5   // 1/8T
+    2.0,  // 1/2
+    1.0,  // 1/4
+    0.5   // 1/8
 };
+
+/** Labels for the sync selector: FREE followed by each division. */
+inline const juce::StringArray syncChoices { "FREE", "1/2", "1/4", "1/8" };
 
 juce::AudioProcessorValueTreeState::ParameterLayout createLayout();
 }

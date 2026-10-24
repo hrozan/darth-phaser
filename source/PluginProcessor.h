@@ -3,6 +3,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 
 #include "PhaserEngine.h"
+#include "PresetManager.h"
 
 class DarthPhaserProcessor final : public juce::AudioProcessor
 {
@@ -37,6 +38,7 @@ public:
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     juce::AudioProcessorValueTreeState& getValueTreeState() { return parameters; }
+    PresetManager& getPresetManager() { return presetManager; }
 
     // ---- display taps for the editor ----
     float getLfoPhase() const noexcept { return engine.getLfoPhase(); }
@@ -50,6 +52,7 @@ private:
     PhaserEngine::Settings gatherSettings() const;
 
     juce::AudioProcessorValueTreeState parameters;
+    PresetManager presetManager { parameters };
     PhaserEngine engine;
 
     // Cached raw pointers: looking parameters up by string on the audio thread is wasteful.

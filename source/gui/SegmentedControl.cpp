@@ -2,20 +2,28 @@
 
 #include "Theme.h"
 
-SegmentedControl::SegmentedControl (juce::RangedAudioParameter& parameter, const juce::StringArray& options)
-    : items (options),
-      attachment (parameter,
-                  [this] (float newValue)
-                  {
-                      selected = juce::jlimit (0, items.size() - 1, juce::roundToInt (newValue));
-                      repaint();
-                  },
-                  nullptr)
+SegmentedControl::SegmentedControl (const juce::StringArray& options)
+    : items (options)
 {
-    attachment.sendInitialUpdate();
 }
 
-SegmentedControl::~SegmentedControl() = default;
+void SegmentedControl::setItems (const juce::StringArray& options)
+{
+    items = options;
+    selected = juce::jlimit (0, juce::jmax (0, items.size() - 1), selected);
+    repaint();
+}
+
+void SegmentedControl::setSelectedIndex (int index)
+{
+    const auto clamped = juce::jlimit (0, juce::jmax (0, items.size() - 1), index);
+
+    if (clamped != selected)
+    {
+        selected = clamped;
+        repaint();
+    }
+}
 
 int SegmentedControl::indexAt (juce::Point<float> p) const
 {
@@ -28,7 +36,12 @@ int SegmentedControl::indexAt (juce::Point<float> p) const
 
 void SegmentedControl::mouseDown (const juce::MouseEvent& e)
 {
-    attachment.setValueAsCompleteGesture (static_cast<float> (indexAt (e.position)));
+    const auto index = indexAt (e.position);
+
+    if (onSelect != nullptr)
+        onSelect (index);
+    else
+        setSelectedIndex (index);
 }
 
 void SegmentedControl::paint (juce::Graphics& g)
@@ -77,4 +90,16 @@ void SegmentedControl::paint (juce::Graphics& g)
 
     g.setColour (Theme::panelHilite);
     g.drawHorizontalLine (static_cast<int> (bounds.getY() + 1.0f), bounds.getX() + 2.0f, bounds.getRight() - 2.0f);
+}
+
+//==============================================================================
+ParameterSegment::ParameterSegment (juce::RangedAudioParameter& parameter, const juce::StringArray& options)
+    : segment (options),
+      attachment (parameter,
+                  [this] (float newValue) { segment.setSelectedIndex (juce::roundToInt (newValue)); },
+                  nullptr)
+{
+    addAndMakeVisible (segment);
+    segment.onSelect = [this] (int index) { attachment.setValueAsCompleteGesture (static_cast<float> (index)); };
+    attachment.sendInitialUpdate();
 }

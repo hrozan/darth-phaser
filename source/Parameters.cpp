@@ -33,8 +33,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout Params::createLayout()
     layout.add (std::make_unique<APB> (juce::ParameterID { ParamID::sync, v }, "Tempo Sync", false));
 
     layout.add (std::make_unique<APC> (juce::ParameterID { ParamID::division, v }, "Division",
-                                       juce::StringArray { "1/1", "1/2", "1/4", "1/8", "1/16", "1/32", "1/4T", "1/8T" },
-                                       3));
+                                       juce::StringArray { "1/2", "1/4", "1/8" },
+                                       2));
 
     layout.add (std::make_unique<APF> (juce::ParameterID { ParamID::depth, v }, "Depth",
                                        Range { 0.0f, 100.0f, 0.1f }, 78.0f,

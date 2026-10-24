@@ -18,7 +18,7 @@ can be compiled and tested on its own. `source/Parameters.{h,cpp}` declares the 
 | Control | Range | Notes |
 | --- | --- | --- |
 | Speed | 0.01-10 Hz | Ignored when Tempo Sync is on |
-| Tempo Sync / Division | 1/1 to 1/32, plus 1/4T and 1/8T | Follows the host BPM |
+| Tempo Sync / Division | 1/2, 1/4, 1/8 | Follows the host BPM |
 | Depth | 0-100 % | Full depth sweeps +/- 2 octaves around Centre |
 | Stereo Phase | 0-180 deg | LFO offset between L and R |
 | Waveform | Sine, Triangle, Square, Random | Random is sample and hold, per channel |
@@ -80,35 +80,42 @@ open "build/DarthPhaser_artefacts/Release/Standalone/Darth Phaser.app"
 ## GUI
 
 The editor is built from `design/darth-phaser-layout.png` at a logical 960x600 and scales to
-whatever the host gives it, with the aspect ratio locked.
+whatever the host gives it, with the aspect ratio locked. The two are currently in sync.
 
 ```
 source/gui/
-  Theme.h              # palette and type
-  DarthLookAndFeel.*   # knurled MXR-style knob with a glowing value arc
-  Knob.*               # knob + caption + formatted readout, bound to a parameter
-  SegmentedControl.*   # STAGES / WAVEFORM / SYNC / DIVISION selectors
-  PanelSection.*       # bevelled panel with the amber title bar
-  LfoScope.*           # live response curve and LFO trace
-  LevelMeter.*         # segmented L/R output meters
+  Theme.h               # palette and type
+  DarthLookAndFeel.*    # knurled MXR-style knob with a glowing value arc
+  Knob.*                # knob + caption + formatted readout, bound to a parameter
+  SegmentedControl.*    # row of exclusive buttons, plus a parameter-bound wrapper
+  PanelSection.*        # bevelled panel with the amber title bar
+  LfoScope.*            # the LFO waveform under a fixed playhead
+  StereoOffsetDisplay.* # the LFO drawn twice, separated by the stereo phase
+  LevelMeter.*          # segmented L/R output meters
+  IconButton.*          # new / save / delete preset icons
 ```
 
-The scope is live rather than decorative. The upper area plots the actual magnitude response
-of the all-pass cascade against the dry path, `|(1-mix) + mix*e^(j*phi)|`, where `phi` is the
-summed phase of the stages at their current modulated frequencies, so the notches on screen
-are the notches the DSP is producing. Feedback is not folded into the curve. The lower strip
-scrolls the LFO waveform under a fixed playhead driven by the engine's real phase.
+Panels: MODULATION (Speed, Depth, Waveform), PHASE ENGINE (Stages, Center, Spread, Feedback,
+Damp), LFO / SWEEP (sync selector and scope), STEREO (Phase and the L/R offset display) and
+OUTPUT (Mix, Level, meters).
 
-Two deliberate departures from the mockup:
+The scope shows the selected LFO waveform scrolling under a playhead driven by the engine's
+real phase, not a canned animation. `RESO` is `DAMP`, since a separate resonance control
+would duplicate Feedback.
 
-- The mockup drew the response comb and the LFO sine across the same full-width axis, which
-  would need one axis to be frequency and the other time. They are split instead: response on
-  top, LFO on the bottom strip.
-- `RESO` became `DAMP`, since a separate resonance control would duplicate Feedback.
+### Presets
 
-The header's preset stepper and power LED are wired up: six factory presets in
-`source/Presets.cpp`, and a `bypass` parameter exposed to the host through
-`getBypassParameter()`.
+`source/PresetManager.cpp` lists six read-only factory presets from `source/Presets.cpp`
+followed by any user presets found in:
+
+```
+~/Library/Application Support/Rozan Audio/Darth Phaser/Presets/*.darthpreset
+```
+
+A user preset is the plugin's full parameter state as XML. The header icons create a new one
+(prompting for a name), overwrite the current one, and move it to the trash; save and delete
+are disabled while a factory preset is selected. The power LED is a `bypass` parameter
+exposed to the host through `getBypassParameter()`.
 
 Fonts are Futura for the wordmark and Avenir Next Condensed for labels, both macOS system
 faces; other platforms fall back.
@@ -129,19 +136,10 @@ Theme: near-black chassis with crimson rim light (Darth Vader), MXR Phase 90 ora
 primary accent with knurled black knobs and white pointers, laid out in the dense multi-section
 style of HY-Phaser. Panel size is 960x600.
 
-The mockup is currently **ahead of the editor** in three places, none of them ported yet:
-
-| In the mockup | In `PluginEditor.cpp` today |
-| --- | --- |
-| Dedicated STEREO section with the Phase knob and an L/R offset display | Phase knob sits inside MODULATION |
-| LFO / SWEEP shows only the red LFO trace | `LfoScope` also draws the live response curve above it |
-| New / Save / Delete icons beside the preset display | Preset stepper only, six read-only factory presets |
-
-The preset icons imply user presets stored on disk, which the plugin does not have yet.
-
-The sync control also differs in shape rather than capability: the mockup shows one four-way
-selector (FREE, 1/2, 1/4, 1/8), while the editor has a FREE/SYNC toggle next to a separate
-eight-way division selector covering 1/1 through 1/32 plus 1/4T and 1/8T.
+The editor matches the mockup. Porting it cost one capability: the sync selector is now a
+single four-way row (FREE, 1/2, 1/4, 1/8), so the division parameter was cut from eight
+choices to three. 1/1, 1/16, 1/32, 1/4T and 1/8T are gone from both the panel and the
+parameter; restoring them means widening the row or moving the divisions into a dropdown.
 
 ## Editor setup (clangd / Neovim)
 

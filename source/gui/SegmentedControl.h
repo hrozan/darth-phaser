@@ -3,12 +3,20 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
-/** Row of mutually exclusive buttons: STAGES, WAVEFORM and the sync switch. */
+#include <functional>
+
+/** Row of mutually exclusive buttons. Selection is driven by the owner. */
 class SegmentedControl final : public juce::Component
 {
 public:
-    SegmentedControl (juce::RangedAudioParameter& parameter, const juce::StringArray& options);
-    ~SegmentedControl() override;
+    explicit SegmentedControl (const juce::StringArray& options);
+
+    void setSelectedIndex (int index);
+    int getSelectedIndex() const noexcept { return selected; }
+
+    void setItems (const juce::StringArray& options);
+
+    std::function<void (int)> onSelect;
 
     void paint (juce::Graphics&) override;
     void mouseDown (const juce::MouseEvent&) override;
@@ -19,7 +27,20 @@ private:
     juce::StringArray items;
     int selected = 0;
 
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SegmentedControl)
+};
+
+/** A SegmentedControl bound to one choice or bool parameter. */
+class ParameterSegment final : public juce::Component
+{
+public:
+    ParameterSegment (juce::RangedAudioParameter&, const juce::StringArray& options);
+
+    void resized() override { segment.setBounds (getLocalBounds()); }
+
+private:
+    SegmentedControl segment;
     juce::ParameterAttachment attachment;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SegmentedControl)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ParameterSegment)
 };

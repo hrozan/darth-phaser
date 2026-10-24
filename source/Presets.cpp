@@ -33,7 +33,7 @@ const std::vector<Presets::Preset>& Presets::factory()
             { ParamID::damping, 88.0f }, { ParamID::mix, 50.0f }, { ParamID::level, -2.0f } } },
 
         { "SITH CHOIR", {
-            { ParamID::rate, 0.75f }, { ParamID::sync, 1.0f }, { ParamID::division, 3.0f },
+            { ParamID::rate, 0.75f }, { ParamID::sync, 1.0f }, { ParamID::division, 2.0f },
             { ParamID::depth, 70.0f }, { ParamID::stereoPhase, 150.0f }, { ParamID::waveform, 1.0f },
             { ParamID::stages, 3.0f }, { ParamID::centre, 900.0f }, { ParamID::spread, 85.0f },
             { ParamID::feedback, 55.0f }, { ParamID::damping, 40.0f }, { ParamID::mix, 50.0f },
