@@ -139,6 +139,10 @@ The mockup is currently **ahead of the editor** in three places, none of them po
 
 The preset icons imply user presets stored on disk, which the plugin does not have yet.
 
+The sync control also differs in shape rather than capability: the mockup shows one four-way
+selector (FREE, 1/2, 1/4, 1/8), while the editor has a FREE/SYNC toggle next to a separate
+eight-way division selector covering 1/1 through 1/32 plus 1/4T and 1/8T.
+
 ## Editor setup (clangd / Neovim)
 
 `CMAKE_EXPORT_COMPILE_COMMANDS` is on, so configuring the project writes
