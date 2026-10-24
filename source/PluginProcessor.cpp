@@ -4,10 +4,10 @@
 
 namespace
 {
-constexpr auto stateIdentifier = "DarkPhaserState";
+constexpr auto stateIdentifier = "DarthPhaserState";
 }
 
-DarkPhaserProcessor::DarkPhaserProcessor()
+DarthPhaserProcessor::DarthPhaserProcessor()
     : AudioProcessor (BusesProperties()
                           .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
@@ -15,23 +15,23 @@ DarkPhaserProcessor::DarkPhaserProcessor()
 {
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout DarkPhaserProcessor::createParameterLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout DarthPhaserProcessor::createParameterLayout()
 {
     // Phaser parameters (rate, depth, centre frequency, feedback, stages, mix)
     // will be declared here once the DSP lands.
     return {};
 }
 
-void DarkPhaserProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void DarthPhaserProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     juce::ignoreUnused (sampleRate, samplesPerBlock);
 }
 
-void DarkPhaserProcessor::releaseResources()
+void DarthPhaserProcessor::releaseResources()
 {
 }
 
-bool DarkPhaserProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool DarthPhaserProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     const auto& mainOutput = layouts.getMainOutputChannelSet();
     const auto& mainInput  = layouts.getMainInputChannelSet();
@@ -42,7 +42,7 @@ bool DarkPhaserProcessor::isBusesLayoutSupported (const BusesLayout& layouts) co
     return mainInput == mainOutput;
 }
 
-void DarkPhaserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void DarthPhaserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ignoreUnused (midiMessages);
 
@@ -54,18 +54,18 @@ void DarkPhaserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::
     // Pass-through for now: the phaser is applied here.
 }
 
-juce::AudioProcessorEditor* DarkPhaserProcessor::createEditor()
+juce::AudioProcessorEditor* DarthPhaserProcessor::createEditor()
 {
-    return new DarkPhaserEditor (*this);
+    return new DarthPhaserEditor (*this);
 }
 
-void DarkPhaserProcessor::getStateInformation (juce::MemoryBlock& destData)
+void DarthPhaserProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     if (auto xml = parameters.copyState().createXml())
         copyXmlToBinary (*xml, destData);
 }
 
-void DarkPhaserProcessor::setStateInformation (const void* data, int sizeInBytes)
+void DarthPhaserProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     if (auto xml = getXmlFromBinary (data, sizeInBytes))
         if (xml->hasTagName (parameters.state.getType()))
@@ -74,5 +74,5 @@ void DarkPhaserProcessor::setStateInformation (const void* data, int sizeInBytes
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new DarkPhaserProcessor();
+    return new DarthPhaserProcessor();
 }

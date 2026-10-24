@@ -1,4 +1,4 @@
-# Dark Phaser
+# Darth Phaser
 
 A phaser audio plugin built with [JUCE](https://juce.com) and CMake.
 
@@ -40,8 +40,24 @@ plugin folder (`~/Library/Audio/Plug-Ins/VST3` on macOS).
 ### Run the standalone
 
 ```sh
-open "build/DarkPhaser_artefacts/Release/Standalone/Dark Phaser.app"
+open "build/DarthPhaser_artefacts/Release/Standalone/Darth Phaser.app"
 ```
+
+## Design
+
+`design/darth-phaser-layout.png` is the GUI mockup the editor is being built toward, and
+`design/darth-phaser-layout.html` is the source it renders from:
+
+```sh
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu \
+  --screenshot=design/darth-phaser-layout.png --window-size=960,600 \
+  --force-device-scale-factor=2 --hide-scrollbars \
+  "file://$PWD/design/darth-phaser-layout.html"
+```
+
+Theme: near-black chassis with crimson rim light (Darth Vader), MXR Phase 90 orange as the
+primary accent with knurled black knobs and white pointers, laid out in the dense multi-section
+style of HY-Phaser. Panel size is 960x600.
 
 ## Editor setup (clangd / Neovim)
 
@@ -76,8 +92,8 @@ source/
 
 | Field | Value |
 | --- | --- |
-| Product name | Dark Phaser |
+| Product name | Darth Phaser |
 | Company | Rozan Audio |
-| Bundle ID | com.rozanaudio.darkphaser |
+| Bundle ID | com.rozanaudio.darthphaser |
 | Manufacturer code | `Rzan` |
-| Plugin code | `Dkph` |
+| Plugin code | `Dtph` |

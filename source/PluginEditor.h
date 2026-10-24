@@ -4,17 +4,17 @@
 
 #include "PluginProcessor.h"
 
-class DarkPhaserEditor final : public juce::AudioProcessorEditor
+class DarthPhaserEditor final : public juce::AudioProcessorEditor
 {
 public:
-    explicit DarkPhaserEditor (DarkPhaserProcessor&);
-    ~DarkPhaserEditor() override = default;
+    explicit DarthPhaserEditor (DarthPhaserProcessor&);
+    ~DarthPhaserEditor() override = default;
 
     void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
-    DarkPhaserProcessor& processorRef;
+    DarthPhaserProcessor& processorRef;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DarkPhaserEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DarthPhaserEditor)
 };

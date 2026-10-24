@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(DarkPhaser VERSION 0.1.0 LANGUAGES C CXX)
+project(DarthPhaser VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -30,12 +30,12 @@ FetchContent_Declare(JUCE
     GIT_SHALLOW    TRUE)
 FetchContent_MakeAvailable(JUCE)
 
-juce_add_plugin(DarkPhaser
-    PRODUCT_NAME                "Dark Phaser"
+juce_add_plugin(DarthPhaser
+    PRODUCT_NAME                "Darth Phaser"
     COMPANY_NAME                "Rozan Audio"
-    BUNDLE_ID                   "com.rozanaudio.darkphaser"
+    BUNDLE_ID                   "com.rozanaudio.darthphaser"
     PLUGIN_MANUFACTURER_CODE    Rzan
-    PLUGIN_CODE                 Dkph
+    PLUGIN_CODE                 Dtph
     FORMATS                     VST3 Standalone
     VST3_CATEGORIES             Fx Modulation
     IS_SYNTH                    FALSE
@@ -45,16 +45,16 @@ juce_add_plugin(DarkPhaser
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
     COPY_PLUGIN_AFTER_BUILD     TRUE)
 
-target_sources(DarkPhaser PRIVATE
+target_sources(DarthPhaser PRIVATE
     source/PluginProcessor.cpp
     source/PluginEditor.cpp)
 
-target_compile_definitions(DarkPhaser PUBLIC
+target_compile_definitions(DarthPhaser PUBLIC
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
-target_link_libraries(DarkPhaser PRIVATE
+target_link_libraries(DarthPhaser PRIVATE
     juce::juce_audio_utils
     juce::juce_dsp
   PUBLIC

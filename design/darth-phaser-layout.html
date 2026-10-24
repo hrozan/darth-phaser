@@ -1,0 +1,285 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Darth Phaser Layout</title>
+<style>
+:root{
+  --bg:#09090b; --panel:#121216; --panel2:#0e0e12; --edge:#2c2c35; --edge2:#000;
+  --amber:#ff7a18; --amber2:#ffae52; --saber:#ff2233; --txt:#eceae6; --mut:#79766f;
+  --disp:#07070a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{width:960px;height:600px;background:var(--bg);overflow:hidden;
+  font-family:"Avenir Next Condensed","Helvetica Neue",sans-serif;color:var(--txt);
+  -webkit-font-smoothing:antialiased}
+
+/* ---- chassis ---- */
+.unit{position:absolute;inset:0;padding:13px;display:flex;flex-direction:column;gap:9px;
+  background:
+    radial-gradient(130% 90% at 50% -25%, rgba(255,34,51,.13), transparent 62%),
+    radial-gradient(80% 60% at 50% 115%, rgba(255,122,24,.07), transparent 70%),
+    linear-gradient(#131318,#0a0a0d 55%,#07070a);
+}
+.unit::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.016) 0 1px,transparent 1px 3px)}
+
+.pan{position:relative;border-radius:5px;background:linear-gradient(#15151a,#0d0d11);
+  border:1px solid #000;box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 2px 5px rgba(0,0,0,.6)}
+.hd{display:flex;align-items:center;gap:8px;padding:5px 10px 4px;border-bottom:1px solid #000;
+  box-shadow:0 1px 0 rgba(255,255,255,.045)}
+.hd b{font:600 10px/1 "Avenir Next Condensed";letter-spacing:.22em;color:var(--amber);
+  text-shadow:0 0 9px rgba(255,122,24,.5)}
+.hd i{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,122,24,.32),transparent)}
+.hd s{width:5px;height:5px;border-radius:50%;background:#ff7a18;box-shadow:0 0 7px #ff7a18;opacity:.75}
+
+/* ---- header ---- */
+.top{height:70px;display:flex;align-items:center;gap:14px;padding:0 15px;flex:none}
+.mark{width:46px;height:46px;flex:none;filter:drop-shadow(0 0 13px rgba(255,34,51,.55))}
+.name{display:flex;flex-direction:column;gap:3px}
+.name h1{font:400 30px/1 Futura,"Avenir Next",sans-serif;letter-spacing:.17em;
+  background:linear-gradient(#fff,#b9b4ad 48%,#6f6a63);-webkit-background-clip:text;color:transparent;
+  text-shadow:0 0 26px rgba(255,34,51,.3)}
+.name p{font:600 9px/1 "Avenir Next Condensed";letter-spacing:.42em;color:var(--mut)}
+.spacer{flex:1}
+.preset{display:flex;align-items:center;gap:0;border:1px solid #000;border-radius:4px;overflow:hidden;
+  background:linear-gradient(#0b0b0e,#070709);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.preset span{padding:0 10px;height:28px;display:flex;align-items:center;color:var(--mut);font:600 13px/1 sans-serif}
+.preset em{padding:0 18px;height:28px;display:flex;align-items:center;font:600 11px/1 "Avenir Next Condensed";
+  letter-spacing:.2em;color:var(--amber2);font-style:normal;border-left:1px solid #000;border-right:1px solid #000;
+  background:var(--disp);text-shadow:0 0 10px rgba(255,122,24,.55);min-width:168px;justify-content:center}
+.pw{display:flex;flex-direction:column;align-items:center;gap:5px}
+.led{width:11px;height:11px;border-radius:50%;background:radial-gradient(circle at 36% 32%,#ff8a92,#ff2233 42%,#7d0a13);
+  box-shadow:0 0 14px #ff2233,0 0 30px rgba(255,34,51,.5),inset 0 -1px 2px rgba(0,0,0,.7)}
+.pw b{font:600 8px/1 "Avenir Next Condensed";letter-spacing:.2em;color:var(--mut)}
+
+/* ---- rows ---- */
+.row{display:flex;gap:9px;flex:none}
+.body{padding:13px 14px}
+
+/* ---- knobs ---- */
+.ks{display:flex;align-items:flex-start;gap:16px}
+.k{display:flex;flex-direction:column;align-items:center;gap:6px;--v:.5;--acc:var(--amber)}
+.dial{position:relative;width:var(--d,62px);height:var(--d,62px)}
+.ring,.fill{position:absolute;inset:0;border-radius:50%;
+  -webkit-mask:radial-gradient(circle,transparent 0 calc(50% - 5.5px),#000 calc(50% - 5.5px) calc(50% - 1.5px),transparent calc(50% - 1.5px))}
+.ring{background:conic-gradient(from 225deg,#25252c 0 270deg,transparent 270deg)}
+.fill{background:conic-gradient(from 225deg,var(--acc) calc(var(--v)*270deg),transparent 0 270deg);
+  filter:drop-shadow(0 0 5px color-mix(in srgb,var(--acc) 62%,transparent))}
+.cap{position:absolute;inset:9px;border-radius:50%;
+  background:
+    repeating-conic-gradient(from 0deg,#1d1d22 0deg 7deg,#0b0b0e 7deg 14deg);
+  box-shadow:0 2px 6px rgba(0,0,0,.85),inset 0 0 0 1px rgba(255,255,255,.07)}
+.face{position:absolute;inset:3px;border-radius:50%;
+  background:radial-gradient(circle at 34% 26%,#4a4a52,#18181d 36%,#070709 78%);
+  box-shadow:inset 0 -2px 5px rgba(0,0,0,.9),inset 0 2px 3px rgba(255,255,255,.1)}
+.face::before{content:"";position:absolute;left:14%;top:9%;width:46%;height:30%;border-radius:50%;
+  background:linear-gradient(160deg,rgba(255,255,255,.4),transparent 72%);filter:blur(1.2px)}
+.ptr{position:absolute;left:50%;top:7%;width:2.5px;height:36%;margin-left:-1.25px;border-radius:2px;
+  background:linear-gradient(#fff,#d6d2cc);box-shadow:0 0 6px rgba(255,255,255,.6)}
+.rot{position:absolute;inset:0;transform:rotate(calc(-135deg + var(--v)*270deg))}
+.kl{font:600 9px/1 "Avenir Next Condensed";letter-spacing:.2em;color:var(--mut)}
+.kv{font:600 11px/1 "Avenir Next Condensed";letter-spacing:.08em;color:var(--amber2);
+  text-shadow:0 0 8px rgba(255,122,24,.45)}
+.hero{--d:104px}
+.hero .cap{inset:13px}
+.hero .kl{font-size:10px;color:#b4b0a9}
+.hero .kv{font-size:15px}
+
+/* ---- segmented ---- */
+.seg{display:flex;border:1px solid #000;border-radius:4px;overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 1px 3px rgba(0,0,0,.6)}
+.seg b{flex:1;text-align:center;padding:6px 0;font:600 10px/1 "Avenir Next Condensed";letter-spacing:.14em;
+  color:#6f6c66;background:linear-gradient(#131318,#0a0a0d);border-right:1px solid #000}
+.seg b:last-child{border-right:0}
+.seg b.on{color:#120a03;background:linear-gradient(#ffb15c,#ff7a18);
+  text-shadow:0 1px 0 rgba(255,255,255,.35);box-shadow:0 0 13px rgba(255,122,24,.55),inset 0 1px 0 rgba(255,255,255,.5)}
+.cap2{font:600 9px/1 "Avenir Next Condensed";letter-spacing:.2em;color:var(--mut);margin-bottom:6px;display:block}
+
+/* ---- scope ---- */
+.scope{position:relative;border-radius:4px;background:
+  radial-gradient(70% 120% at 50% 50%,#101016,#06060a 75%);
+  border:1px solid #000;box-shadow:inset 0 2px 9px rgba(0,0,0,.9),inset 0 0 0 1px rgba(255,255,255,.035)}
+
+/* ---- meter ---- */
+.met{display:flex;gap:4px;align-items:flex-end;height:74px}
+.mcol{width:9px;height:100%;border-radius:2px;background:#0a0a0d;border:1px solid #000;
+  display:flex;flex-direction:column-reverse;padding:2px;gap:2px;box-shadow:inset 0 1px 4px rgba(0,0,0,.9)}
+.mcol u{display:block;height:3px;border-radius:1px;background:#1e1e24}
+.mcol u.a{background:var(--amber);box-shadow:0 0 5px rgba(255,122,24,.8)}
+.mcol u.r{background:var(--saber);box-shadow:0 0 6px rgba(255,34,51,.85)}
+.mlab{font:600 8px/1 "Avenir Next Condensed";letter-spacing:.18em;color:var(--mut);text-align:center;margin-top:5px}
+
+/* ---- footer ---- */
+.foot{flex:none;height:13px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 3px 1px}
+.foot span{font:600 8px/1 "Avenir Next Condensed";letter-spacing:.3em;color:#4e4c48}
+.foot em{font-style:normal;color:var(--amber);opacity:.8}
+</style></head>
+<body>
+<div class="unit">
+
+  <!-- HEADER -->
+  <div class="pan top">
+    <svg class="mark" viewBox="0 0 64 64">
+      <defs>
+        <linearGradient id="hm" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#4a4a54"/><stop offset="38%" stop-color="#1b1b21"/>
+          <stop offset="1" stop-color="#050507"/>
+        </linearGradient>
+        <linearGradient id="lens" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ff5563"/><stop offset="1" stop-color="#a10d19"/>
+        </linearGradient>
+      </defs>
+      <!-- helm shell: dome over flared mandible -->
+      <path d="M32 4c-10 0-17 7-18 17l-1 11c-1 7-3 13-6 19l7 4c5 2 11 3 18 3s13-1 18-3l7-4c-3-6-5-12-6-19l-1-11c-1-10-8-17-18-17z"
+            fill="url(#hm)" stroke="#ff2233" stroke-width="1.1" stroke-opacity=".45"/>
+      <!-- brow ridge -->
+      <path d="M13 24c5-5 11-7 19-7s14 2 19 7" fill="none" stroke="#000" stroke-width="2.4"/>
+      <path d="M13 23c5-5 11-7 19-7s14 2 19 7" fill="none" stroke="#5b5b66" stroke-width=".9" stroke-opacity=".8"/>
+      <!-- angled eye lenses -->
+      <path d="M15 28l12-3 1 8-11 2z" fill="url(#lens)"/>
+      <path d="M49 28l-12-3-1 8 11 2z" fill="url(#lens)"/>
+      <path d="M15 28l12-3 1 8-11 2z" fill="none" stroke="#000" stroke-width="1.2"/>
+      <path d="M49 28l-12-3-1 8 11 2z" fill="none" stroke="#000" stroke-width="1.2"/>
+      <!-- central nose ridge -->
+      <path d="M32 20l-4 19h8z" fill="#0a0a0d" stroke="#3a3a44" stroke-width=".7"/>
+      <!-- mouth grille -->
+      <path d="M24 40h16l-2 11H26z" fill="#07070a" stroke="#3a3a44" stroke-width=".8"/>
+      <path d="M27 43h10M27.4 46h9.2M27.8 49h8.4" stroke="#ff7a18" stroke-width="1" stroke-opacity=".8"/>
+      <!-- cheek vents -->
+      <path d="M14 38h7l-1 6h-7zM50 38h-7l1 6h7z" fill="#0a0a0d" stroke="#33333c" stroke-width=".7"/>
+    </svg>
+    <div class="name"><h1>DARTH PHASER</h1><p>STEREO PHASE SHIFTER</p></div>
+    <div class="spacer"></div>
+    <div class="preset"><span>&#9666;</span><em>IMPERIAL SWEEP</em><span>&#9656;</span></div>
+    <div class="pw"><div class="led"></div><b>POWER</b></div>
+  </div>
+
+  <!-- ROW A -->
+  <div class="row">
+    <div class="pan" style="width:366px">
+      <div class="hd"><b>MODULATION</b><i></i><s></s></div>
+      <div class="body" style="display:flex;gap:18px;align-items:center">
+        <div class="k hero" style="--v:.42">
+          <div class="dial"><div class="ring"></div><div class="fill"></div>
+            <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+          <div class="kl">SPEED</div><div class="kv">1.42 Hz</div>
+        </div>
+        <div style="flex:1">
+          <div class="ks" style="justify-content:space-around;margin-bottom:13px">
+            <div class="k" style="--v:.78"><div class="dial"><div class="ring"></div><div class="fill"></div>
+              <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+              <div class="kl">DEPTH</div><div class="kv">78 %</div></div>
+            <div class="k" style="--v:.33;--acc:var(--saber)"><div class="dial"><div class="ring"></div><div class="fill"></div>
+              <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+              <div class="kl">PHASE</div><div class="kv">120&deg;</div></div>
+          </div>
+          <span class="cap2">WAVEFORM</span>
+          <div class="seg"><b class="on">SINE</b><b>TRI</b><b>SQR</b><b>RND</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pan" style="flex:1">
+      <div class="hd"><b>PHASE ENGINE</b><i></i><s></s></div>
+      <div class="body">
+        <span class="cap2">STAGES</span>
+        <div class="seg" style="margin-bottom:14px"><b>2</b><b>4</b><b>6</b><b class="on">8</b><b>12</b></div>
+        <div class="ks" style="justify-content:space-between">
+          <div class="k" style="--v:.55"><div class="dial"><div class="ring"></div><div class="fill"></div>
+            <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+            <div class="kl">CENTER</div><div class="kv">620 Hz</div></div>
+          <div class="k" style="--v:.42"><div class="dial"><div class="ring"></div><div class="fill"></div>
+            <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+            <div class="kl">SPREAD</div><div class="kv">42 %</div></div>
+          <div class="k" style="--v:.65;--acc:var(--saber)"><div class="dial"><div class="ring"></div><div class="fill"></div>
+            <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+            <div class="kl">FEEDBACK</div><div class="kv">65 %</div></div>
+          <div class="k" style="--v:.3"><div class="dial"><div class="ring"></div><div class="fill"></div>
+            <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+            <div class="kl">RESO</div><div class="kv">0.30</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW B -->
+  <div class="row" style="flex:1">
+    <div class="pan" style="flex:1;display:flex;flex-direction:column">
+      <div class="hd"><b>LFO / SWEEP</b><i></i>
+        <b style="color:#79766f;letter-spacing:.16em">SYNC</b>
+        <div class="seg" style="width:104px"><b>FREE</b><b class="on">1/8</b></div></div>
+      <div class="body" style="flex:1;display:flex;padding:11px 12px">
+        <div class="scope" style="flex:1"><svg id="sc" width="100%" height="100%" preserveAspectRatio="none"></svg></div>
+      </div>
+    </div>
+
+    <div class="pan" style="width:270px">
+      <div class="hd"><b>OUTPUT</b><i></i><s></s></div>
+      <div class="body" style="display:flex;gap:16px;align-items:center;padding:11px 14px">
+        <div class="k" style="--v:.5"><div class="dial"><div class="ring"></div><div class="fill"></div>
+          <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+          <div class="kl">MIX</div><div class="kv">50 %</div></div>
+        <div class="k" style="--v:.72"><div class="dial"><div class="ring"></div><div class="fill"></div>
+          <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+          <div class="kl">LEVEL</div><div class="kv">-3.0 dB</div></div>
+        <div>
+          <div class="met" id="met"></div>
+          <div class="mlab">L &nbsp; R</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot"><span>ROZAN AUDIO</span><span>VST3 &middot; STANDALONE &nbsp;&nbsp; <em>v0.1.0</em></span></div>
+</div>
+
+<script>
+// phaser sweep trace: LFO sine driving a notch-comb curve
+const sc = document.getElementById('sc');
+const W = sc.clientWidth, H = sc.clientHeight;
+sc.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+const ns = 'http://www.w3.org/2000/svg';
+function el(n, a){ const e = document.createElementNS(ns, n); for (const k in a) e.setAttribute(k, a[k]); return e; }
+
+// grid
+for (let i = 1; i < 8; i++) sc.appendChild(el('line', {x1: W*i/8, y1: 0, x2: W*i/8, y2: H, stroke: '#ffffff', 'stroke-opacity': .05}));
+for (let i = 1; i < 4; i++) sc.appendChild(el('line', {x1: 0, y1: H*i/4, x2: W, y2: H*i/4, stroke: '#ffffff', 'stroke-opacity': .05}));
+sc.appendChild(el('line', {x1: 0, y1: H/2, x2: W, y2: H/2, stroke: '#ff7a18', 'stroke-opacity': .22, 'stroke-dasharray': '3 4'}));
+
+// amber comb / notch response
+let d = '';
+for (let x = 0; x <= W; x += 2) {
+  const t = x / W;
+  const notch = Math.sin(t * Math.PI * 16) * Math.exp(-Math.pow((t - .45) * 2.6, 2));
+  const y = H/2 - notch * H * .3 - Math.sin(t * Math.PI * 2) * H * .06;
+  d += (x ? 'L' : 'M') + x + ' ' + y.toFixed(1);
+}
+sc.appendChild(el('path', {d: d, fill: 'none', stroke: '#ff7a18', 'stroke-width': 1.3, 'stroke-opacity': .5}));
+
+// saber LFO trace
+let s = '';
+for (let x = 0; x <= W; x += 1.5) {
+  const t = x / W;
+  const y = H/2 - Math.sin(t * Math.PI * 4) * H * .33;
+  s += (x ? 'L' : 'M') + x + ' ' + y.toFixed(1);
+}
+sc.appendChild(el('path', {d: s, fill: 'none', stroke: '#ff2233', 'stroke-width': 5, 'stroke-opacity': .18, filter: 'blur(3px)'}));
+sc.appendChild(el('path', {d: s, fill: 'none', stroke: '#ff2233', 'stroke-width': 2.2, 'stroke-linecap': 'round'}));
+sc.appendChild(el('path', {d: s, fill: 'none', stroke: '#ffd7da', 'stroke-width': .9, 'stroke-opacity': .9}));
+
+// playhead
+const px = W * .45;
+sc.appendChild(el('line', {x1: px, y1: 0, x2: px, y2: H, stroke: '#ffae52', 'stroke-opacity': .55}));
+sc.appendChild(el('circle', {cx: px, cy: H/2 - Math.sin(.45 * Math.PI * 4) * H * .33, r: 3.6, fill: '#fff'}));
+
+// meter segments
+const met = document.getElementById('met');
+[13, 11].forEach(function (lit) {
+  const c = document.createElement('div'); c.className = 'mcol';
+  for (let i = 0; i < 16; i++) {
+    const u = document.createElement('u');
+    if (i < lit) u.className = i > 12 ? 'r' : 'a';
+    c.appendChild(u);
+  }
+  met.appendChild(c);
+});
+</script>
+</body></html>
