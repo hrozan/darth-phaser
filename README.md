@@ -129,6 +129,11 @@ Theme: near-black chassis with crimson rim light (Darth Vader), MXR Phase 90 ora
 primary accent with knurled black knobs and white pointers, laid out in the dense multi-section
 style of HY-Phaser. Panel size is 960x600.
 
+The mockup is currently **ahead of the editor** in one place: it has a dedicated STEREO
+section holding the Stereo Phase knob and an L/R offset display, where `PluginEditor.cpp`
+still keeps that knob inside MODULATION. Porting it means moving one knob and splitting the
+right column of the lower row.
+
 ## Editor setup (clangd / Neovim)
 
 `CMAKE_EXPORT_COMPILE_COMMANDS` is on, so configuring the project writes

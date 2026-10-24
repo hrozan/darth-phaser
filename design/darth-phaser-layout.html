@@ -154,22 +154,19 @@ body{width:960px;height:600px;background:var(--bg);overflow:hidden;
 
   <!-- ROW A -->
   <div class="row">
-    <div class="pan" style="width:366px">
+    <div class="pan" style="width:330px">
       <div class="hd"><b>MODULATION</b><i></i><s></s></div>
-      <div class="body" style="display:flex;gap:18px;align-items:center">
+      <div class="body" style="display:flex;gap:16px;align-items:center">
         <div class="k hero" style="--v:.42">
           <div class="dial"><div class="ring"></div><div class="fill"></div>
             <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
           <div class="kl">SPEED</div><div class="kv">1.42 Hz</div>
         </div>
         <div style="flex:1">
-          <div class="ks" style="justify-content:space-around;margin-bottom:13px">
+          <div class="ks" style="justify-content:center;margin-bottom:13px">
             <div class="k" style="--v:.78"><div class="dial"><div class="ring"></div><div class="fill"></div>
               <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
               <div class="kl">DEPTH</div><div class="kv">78 %</div></div>
-            <div class="k" style="--v:.33;--acc:var(--saber)"><div class="dial"><div class="ring"></div><div class="fill"></div>
-              <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
-              <div class="kl">PHASE</div><div class="kv">120&deg;</div></div>
           </div>
           <span class="cap2">WAVEFORM</span>
           <div class="seg"><b class="on">SINE</b><b>TRI</b><b>SQR</b><b>RND</b></div>
@@ -211,20 +208,39 @@ body{width:960px;height:600px;background:var(--bg);overflow:hidden;
       </div>
     </div>
 
-    <div class="pan" style="width:270px">
-      <div class="hd"><b>OUTPUT</b><i></i><s></s></div>
-      <div class="body" style="display:flex;gap:16px;align-items:center;padding:11px 14px">
-        <div class="k" style="--v:.5"><div class="dial"><div class="ring"></div><div class="fill"></div>
-          <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
-          <div class="kl">MIX</div><div class="kv">50 %</div></div>
-        <div class="k" style="--v:.72"><div class="dial"><div class="ring"></div><div class="fill"></div>
-          <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
-          <div class="kl">LEVEL</div><div class="kv">-3.0 dB</div></div>
-        <div>
-          <div class="met" id="met"></div>
-          <div class="mlab">L &nbsp; R</div>
+    <div style="width:285px;display:flex;flex-direction:column;gap:9px">
+
+      <div class="pan" style="height:118px">
+        <div class="hd"><b>STEREO</b><i></i><s></s></div>
+        <div class="body" style="display:flex;gap:14px;align-items:center;padding:6px 14px">
+          <div class="k" style="--v:.33;--acc:var(--saber);--d:56px">
+            <div class="dial"><div class="ring"></div><div class="fill"></div>
+              <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+            <div class="kl">PHASE</div><div class="kv">120&deg;</div></div>
+          <div style="flex:1">
+            <span class="cap2">L / R OFFSET</span>
+            <div class="scope" style="height:50px">
+              <svg id="sv" width="100%" height="100%" preserveAspectRatio="none"></svg></div>
+          </div>
         </div>
       </div>
+
+      <div class="pan" style="flex:1">
+        <div class="hd"><b>OUTPUT</b><i></i><s></s></div>
+        <div class="body" style="display:flex;gap:14px;align-items:center;padding:6px 14px">
+          <div class="k" style="--v:.5"><div class="dial"><div class="ring"></div><div class="fill"></div>
+            <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+            <div class="kl">MIX</div><div class="kv">50 %</div></div>
+          <div class="k" style="--v:.72"><div class="dial"><div class="ring"></div><div class="fill"></div>
+            <div class="cap"><div class="face"></div><div class="rot"><div class="ptr"></div></div></div></div>
+            <div class="kl">LEVEL</div><div class="kv">-3.0 dB</div></div>
+          <div>
+            <div class="met" id="met"></div>
+            <div class="mlab">L &nbsp; R</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -269,6 +285,33 @@ sc.appendChild(el('path', {d: s, fill: 'none', stroke: '#ffd7da', 'stroke-width'
 const px = W * .45;
 sc.appendChild(el('line', {x1: px, y1: 0, x2: px, y2: H, stroke: '#ffae52', 'stroke-opacity': .55}));
 sc.appendChild(el('circle', {cx: px, cy: H/2 - Math.sin(.45 * Math.PI * 4) * H * .33, r: 3.6, fill: '#fff'}));
+
+// stereo L/R offset: same LFO, two phases
+const sv = document.getElementById('sv');
+const SW = sv.clientWidth, SH = sv.clientHeight;
+sv.setAttribute('viewBox', '0 0 ' + SW + ' ' + SH);
+
+sv.appendChild(el('line', {x1: 0, y1: SH/2, x2: SW, y2: SH/2,
+                          stroke: '#ff7a18', 'stroke-opacity': .16, 'stroke-dasharray': '3 4'}));
+
+function offsetCurve(shift) {
+  let d = '';
+  for (let x = 0; x <= SW; x += 2) {
+    const t = x / SW;
+    const y = SH/2 - Math.sin(2 * Math.PI * (t * 1.5 + shift)) * SH * 0.34;
+    d += (x ? 'L' : 'M') + x + ' ' + y.toFixed(1);
+  }
+  return d;
+}
+
+const stereoOffset = 120 / 360;   // the PHASE knob, in cycles
+[['#ff7a18', 0], ['#ff2233', stereoOffset]].forEach(function (pair) {
+  const d = offsetCurve(pair[1]);
+  sv.appendChild(el('path', {d: d, fill: 'none', stroke: pair[0], 'stroke-width': 4,
+                             'stroke-opacity': .16, filter: 'blur(2px)'}));
+  sv.appendChild(el('path', {d: d, fill: 'none', stroke: pair[0], 'stroke-width': 1.7,
+                             'stroke-linecap': 'round'}));
+});
 
 // meter segments
 const met = document.getElementById('met');
