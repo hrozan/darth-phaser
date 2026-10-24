@@ -2,8 +2,7 @@
 
 A phaser audio plugin built with [JUCE](https://juce.com) and CMake.
 
-> Status: DSP implemented and verified. The designed GUI is next — the editor currently shows
-> generic host controls under the title bar.
+> Status: DSP and GUI both implemented. Next up: factory preset polish and plugin validation.
 
 ## How it works
 
@@ -77,6 +76,42 @@ plugin folder (`~/Library/Audio/Plug-Ins/VST3` on macOS).
 ```sh
 open "build/DarthPhaser_artefacts/Release/Standalone/Darth Phaser.app"
 ```
+
+## GUI
+
+The editor is built from `design/darth-phaser-layout.png` at a logical 960x600 and scales to
+whatever the host gives it, with the aspect ratio locked.
+
+```
+source/gui/
+  Theme.h              # palette and type
+  DarthLookAndFeel.*   # knurled MXR-style knob with a glowing value arc
+  Knob.*               # knob + caption + formatted readout, bound to a parameter
+  SegmentedControl.*   # STAGES / WAVEFORM / SYNC / DIVISION selectors
+  PanelSection.*       # bevelled panel with the amber title bar
+  LfoScope.*           # live response curve and LFO trace
+  LevelMeter.*         # segmented L/R output meters
+```
+
+The scope is live rather than decorative. The upper area plots the actual magnitude response
+of the all-pass cascade against the dry path, `|(1-mix) + mix*e^(j*phi)|`, where `phi` is the
+summed phase of the stages at their current modulated frequencies, so the notches on screen
+are the notches the DSP is producing. Feedback is not folded into the curve. The lower strip
+scrolls the LFO waveform under a fixed playhead driven by the engine's real phase.
+
+Two deliberate departures from the mockup:
+
+- The mockup drew the response comb and the LFO sine across the same full-width axis, which
+  would need one axis to be frequency and the other time. They are split instead: response on
+  top, LFO on the bottom strip.
+- `RESO` became `DAMP`, since a separate resonance control would duplicate Feedback.
+
+The header's preset stepper and power LED are wired up: six factory presets in
+`source/Presets.cpp`, and a `bypass` parameter exposed to the host through
+`getBypassParameter()`.
+
+Fonts are Futura for the wordmark and Avenir Next Condensed for labels, both macOS system
+faces; other platforms fall back.
 
 ## Design
 

@@ -76,5 +76,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout Params::createLayout()
                                        Range { -24.0f, 12.0f, 0.1f }, -3.0f,
                                        juce::AudioParameterFloatAttributes().withStringFromValueFunction (dbString)));
 
+    layout.add (std::make_unique<APB> (juce::ParameterID { ParamID::bypass, v }, "Bypass", false));
+
     return layout;
 }

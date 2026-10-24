@@ -1,0 +1,28 @@
+#pragma once
+
+#include <juce_audio_processors/juce_audio_processors.h>
+#include <juce_gui_basics/juce_gui_basics.h>
+
+/** Rotary knob with the caption and formatted readout underneath, as in the mockup. */
+class Knob final : public juce::Component
+{
+public:
+    Knob (juce::RangedAudioParameter& parameter, const juce::String& caption,
+          juce::Colour accent, bool hero = false);
+
+    void resized() override;
+    void paint (juce::Graphics&) override;
+
+private:
+    void refreshReadout();
+
+    juce::RangedAudioParameter& param;
+    juce::String captionText;
+    juce::String readout;
+    bool isHero;
+
+    juce::Slider slider;
+    juce::SliderParameterAttachment attachment;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (Knob)
+};

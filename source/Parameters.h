@@ -17,6 +17,7 @@ inline constexpr auto feedback    = "feedback";
 inline constexpr auto damping     = "damping";
 inline constexpr auto mix         = "mix";
 inline constexpr auto level       = "level";
+inline constexpr auto bypass      = "bypass";
 }
 
 namespace Params

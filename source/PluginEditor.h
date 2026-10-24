@@ -3,24 +3,29 @@
 #include <juce_gui_basics/juce_gui_basics.h>
 
 #include "PluginProcessor.h"
+#include "gui/DarthLookAndFeel.h"
 
 class DarthPhaserEditor final : public juce::AudioProcessorEditor
 {
 public:
+    /** Logical panel size; the editor scales this to fit whatever the host gives it. */
+    static constexpr int designWidth  = 960;
+    static constexpr int designHeight = 600;
+
     explicit DarthPhaserEditor (DarthPhaserProcessor&);
-    ~DarthPhaserEditor() override = default;
+    ~DarthPhaserEditor() override;
 
     void paint (juce::Graphics&) override;
     void resized() override;
 
 private:
-    static constexpr int headerHeight = 72;
+    class Content;
 
     DarthPhaserProcessor& processorRef;
+    DarthLookAndFeel lookAndFeel;
 
-    // Placeholder until the designed panel in design/ is built: generic controls so
-    // the DSP can be driven from a host today.
-    juce::GenericAudioProcessorEditor controls;
+    std::unique_ptr<Content> content;
+    juce::ComponentBoundsConstrainer constrainer;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DarthPhaserEditor)
 };

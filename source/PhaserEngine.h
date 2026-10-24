@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <atomic>
 #include <cstdint>
 
 /**
@@ -39,6 +40,10 @@ public:
 
     /** In-place. `channels` must hold at least `numChannels` valid pointers. */
     void process (float* const* channels, int numChannels, int numSamples) noexcept;
+
+    /** Display taps, safe to read from the message thread. */
+    float getLfoPhase() const noexcept { return uiPhase.load (std::memory_order_relaxed); }
+    float getModulatedCentreHz() const noexcept { return uiCentre.load (std::memory_order_relaxed); }
 
 private:
     // Coefficients are refreshed every `controlInterval` samples rather than per
@@ -91,4 +96,7 @@ private:
 
     float    phase = 0.0f;          // shared LFO phase, 0..1
     uint32_t rngState = 0x9e3779b9; // deterministic across runs
+
+    std::atomic<float> uiPhase  { 0.0f };
+    std::atomic<float> uiCentre { 620.0f };
 };

@@ -48,8 +48,15 @@ juce_add_plugin(DarthPhaser
 target_sources(DarthPhaser PRIVATE
     source/Parameters.cpp
     source/PhaserEngine.cpp
+    source/Presets.cpp
     source/PluginProcessor.cpp
-    source/PluginEditor.cpp)
+    source/PluginEditor.cpp
+    source/gui/DarthLookAndFeel.cpp
+    source/gui/Knob.cpp
+    source/gui/LevelMeter.cpp
+    source/gui/LfoScope.cpp
+    source/gui/PanelSection.cpp
+    source/gui/SegmentedControl.cpp)
 
 target_compile_definitions(DarthPhaser PUBLIC
     JUCE_WEB_BROWSER=0

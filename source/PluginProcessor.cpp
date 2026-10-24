@@ -27,6 +27,8 @@ DarthPhaserProcessor::DarthPhaserProcessor()
     dampingParam     = parameters.getRawParameterValue (ParamID::damping);
     mixParam         = parameters.getRawParameterValue (ParamID::mix);
     levelParam       = parameters.getRawParameterValue (ParamID::level);
+    bypassValue      = parameters.getRawParameterValue (ParamID::bypass);
+    bypassParam      = parameters.getParameter (ParamID::bypass);
 }
 
 PhaserEngine::Settings DarthPhaserProcessor::gatherSettings() const
@@ -70,6 +72,9 @@ void DarthPhaserProcessor::prepareToPlay (double sampleRate, int samplesPerBlock
 
     engine.setSettings (gatherSettings());
     engine.prepare (sampleRate, juce::jmax (getTotalNumInputChannels(), getTotalNumOutputChannels()));
+
+    for (auto& p : outputPeak)
+        p.store (0.0f, std::memory_order_relaxed);
 }
 
 void DarthPhaserProcessor::releaseResources()
@@ -102,10 +107,24 @@ void DarthPhaserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
             if (const auto bpm = position->getBpm())
                 hostBpm = *bpm;
 
-    engine.setSettings (gatherSettings());
-    engine.process (buffer.getArrayOfWritePointers(),
-                    juce::jmin (buffer.getNumChannels(), PhaserEngine::maxChannels),
-                    buffer.getNumSamples());
+    const auto bypassed = bypassValue != nullptr && bypassValue->load() > 0.5f;
+
+    if (bypassed)
+        engine.reset();
+    else
+    {
+        engine.setSettings (gatherSettings());
+        engine.process (buffer.getArrayOfWritePointers(),
+                        juce::jmin (buffer.getNumChannels(), PhaserEngine::maxChannels),
+                        buffer.getNumSamples());
+    }
+
+    for (size_t c = 0; c < outputPeak.size(); ++c)
+    {
+        const auto source = juce::jmin (static_cast<int> (c), buffer.getNumChannels() - 1);
+        const auto peak = source >= 0 ? buffer.getMagnitude (source, 0, buffer.getNumSamples()) : 0.0f;
+        outputPeak[c].store (peak, std::memory_order_relaxed);
+    }
 }
 
 juce::AudioProcessorEditor* DarthPhaserProcessor::createEditor()

@@ -31,10 +31,20 @@ public:
     const juce::String getProgramName (int) override { return {}; }
     void changeProgramName (int, const juce::String&) override {}
 
+    juce::AudioProcessorParameter* getBypassParameter() const override { return bypassParam; }
+
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
     juce::AudioProcessorValueTreeState& getValueTreeState() { return parameters; }
+
+    // ---- display taps for the editor ----
+    float getLfoPhase() const noexcept { return engine.getLfoPhase(); }
+    float getModulatedCentreHz() const noexcept { return engine.getModulatedCentreHz(); }
+    float getOutputPeak (int channel) const noexcept
+    {
+        return outputPeak[static_cast<size_t> (juce::jlimit (0, 1, channel))].load (std::memory_order_relaxed);
+    }
 
 private:
     PhaserEngine::Settings gatherSettings() const;
@@ -56,8 +66,12 @@ private:
     std::atomic<float>* dampingParam     = nullptr;
     std::atomic<float>* mixParam         = nullptr;
     std::atomic<float>* levelParam       = nullptr;
+    std::atomic<float>* bypassValue      = nullptr;
+    juce::AudioProcessorParameter* bypassParam = nullptr;
 
     double hostBpm = 120.0;
+
+    std::array<std::atomic<float>, 2> outputPeak { };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DarthPhaserProcessor)
 };

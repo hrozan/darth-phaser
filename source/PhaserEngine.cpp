@@ -149,6 +149,9 @@ void PhaserEngine::process (float* const* data, int numChannels, int numSamples)
             const auto bipolar = lfoValue (target.waveform, chPhase, ch) * 2.0f - 1.0f;
             const auto fc      = centre * std::exp2 (bipolar * depth * sweepOctaves);
 
+            if (c == 0)
+                uiCentre.store (fc, std::memory_order_relaxed);
+
             for (int s = 0; s < stages; ++s)
             {
                 const auto frac = stages > 1 ? static_cast<float> (s) / static_cast<float> (stages - 1) - 0.5f
@@ -183,4 +186,6 @@ void PhaserEngine::process (float* const* data, int numChannels, int numSamples)
             phase = wrap01 (phase + phaseInc);
         }
     }
+
+    uiPhase.store (phase, std::memory_order_relaxed);
 }
