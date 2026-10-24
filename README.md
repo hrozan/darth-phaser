@@ -18,7 +18,7 @@ can be compiled and tested on its own. `source/Parameters.{h,cpp}` declares the 
 | Control | Range | Notes |
 | --- | --- | --- |
 | Speed | 0.01-10 Hz | Ignored when Tempo Sync is on |
-| Tempo Sync / Division | 1/2, 1/4, 1/8 | Follows the host BPM |
+| Sync | FREE, 1/2, 1/4, 1/8 | One parameter; anything but FREE follows the host BPM and overrides Speed |
 | Depth | 0-100 % | Full depth sweeps +/- 2 octaves around Centre |
 | Stereo Phase | 0-180 deg | LFO offset between L and R |
 | Waveform | Sine, Triangle, Square, Random | Random is sample and hold, per channel |
@@ -101,7 +101,14 @@ OUTPUT (Mix, Level, meters).
 
 The scope shows the selected LFO waveform scrolling under a playhead driven by the engine's
 real phase, not a canned animation. While tempo sync is on, SPEED greys out and its readout
-shows the rate the host tempo is producing rather than the now-unused knob value. `RESO` is `DAMP`, since a separate resonance control
+shows the rate the host tempo is producing rather than the now-unused knob value.
+
+The sync row is a **single** `syncMode` choice parameter (FREE plus each division) rather
+than a bool paired with a division. One click is then one parameter change, so a host can
+never land in a half-applied state with sync on but the division not yet applied, and
+automating it means automating one control instead of keeping two in step. Segmented
+controls also paint the click immediately and let the parameter callback correct them, so
+the UI stays responsive even if the host defers or rejects the change. `RESO` is `DAMP`, since a separate resonance control
 would duplicate Feedback.
 
 ### Presets

@@ -164,46 +164,6 @@ private:
     PresetManager& manager;
 };
 
-/** FREE plus the tempo divisions in one row, driving both sync and division. */
-class SyncSelector final : public juce::Component
-{
-public:
-    SyncSelector (juce::RangedAudioParameter& syncParam, juce::RangedAudioParameter& divisionParam)
-        : segment (Params::syncChoices),
-          syncAttachment (syncParam,
-                          [this] (float v) { syncOn = v > 0.5f; refresh(); }, nullptr),
-          divisionAttachment (divisionParam,
-                              [this] (float v) { division = juce::roundToInt (v); refresh(); }, nullptr)
-    {
-        addAndMakeVisible (segment);
-
-        segment.onSelect = [this] (int index)
-        {
-            if (index == 0)
-            {
-                syncAttachment.setValueAsCompleteGesture (0.0f);
-            }
-            else
-            {
-                divisionAttachment.setValueAsCompleteGesture (static_cast<float> (index - 1));
-                syncAttachment.setValueAsCompleteGesture (1.0f);
-            }
-        };
-
-        syncAttachment.sendInitialUpdate();
-        divisionAttachment.sendInitialUpdate();
-    }
-
-    void resized() override { segment.setBounds (getLocalBounds()); }
-
-private:
-    void refresh() { segment.setSelectedIndex (syncOn ? division + 1 : 0); }
-
-    SegmentedControl segment;
-    juce::ParameterAttachment syncAttachment, divisionAttachment;
-    bool syncOn = false;
-    int division = 2;
-};
 }
 
 //==============================================================================
@@ -226,7 +186,7 @@ public:
           level    (paramRef (state, ParamID::level),       "LEVEL",    Theme::amber),
           waveform (paramRef (state, ParamID::waveform), { "SINE", "TRI", "SQR", "RND" }),
           stages   (paramRef (state, ParamID::stages),   { "2", "4", "6", "8", "12" }),
-          sync     (paramRef (state, ParamID::sync), paramRef (state, ParamID::division)),
+          sync     (paramRef (state, ParamID::syncMode), Params::syncChoices),
           waveformCaption ("WAVEFORM"), stagesCaption ("STAGES"),
           syncCaption ("SYNC"), offsetCaption ("L / R OFFSET"),
           scope (p),
@@ -460,8 +420,9 @@ private:
     /** While the LFO follows the host, SPEED is driven by the tempo, not the knob. */
     void timerCallback() override
     {
-        auto* syncValue = state.getRawParameterValue (ParamID::sync);
-        const auto synced = syncValue != nullptr && syncValue->load() > 0.5f;
+        auto* syncValue = state.getRawParameterValue (ParamID::syncMode);
+        const auto synced = syncValue != nullptr
+                            && SyncMath::isSynced (juce::roundToInt (syncValue->load()));
         const auto rate = proc.getEffectiveRateHz();
 
         if (synced != wasSynced)
@@ -541,7 +502,7 @@ private:
     PanelSection modulation, phaseEngine, lfoPanel, stereoPanel, outputPanel;
     Knob speed, depth, stereo, centre, spread, feedback, damping, mix, level;
     ParameterSegment waveform, stages;
-    SyncSelector sync;
+    ParameterSegment sync;
     Caption waveformCaption, stagesCaption, syncCaption, offsetCaption;
     LfoScope scope;
     StereoOffsetDisplay offsetDisplay;

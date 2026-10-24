@@ -30,11 +30,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout Params::createLayout()
                                        rateRange, 1.42f,
                                        juce::AudioParameterFloatAttributes().withStringFromValueFunction (hzString)));
 
-    layout.add (std::make_unique<APB> (juce::ParameterID { ParamID::sync, v }, "Tempo Sync", false));
-
-    layout.add (std::make_unique<APC> (juce::ParameterID { ParamID::division, v }, "Division",
-                                       juce::StringArray { "1/2", "1/4", "1/8" },
-                                       2));
+    // One parameter for the whole sync row: FREE, then each division.
+    layout.add (std::make_unique<APC> (juce::ParameterID { ParamID::syncMode, v }, "Sync",
+                                       Params::syncChoices, 0));
 
     layout.add (std::make_unique<APF> (juce::ParameterID { ParamID::depth, v }, "Depth",
                                        Range { 0.0f, 100.0f, 0.1f }, 78.0f,

@@ -7,8 +7,7 @@
 namespace ParamID
 {
 inline constexpr auto rate        = "rate";
-inline constexpr auto sync        = "sync";
-inline constexpr auto division    = "division";
+inline constexpr auto syncMode    = "syncMode";
 inline constexpr auto depth       = "depth";
 inline constexpr auto stereoPhase = "stereoPhase";
 inline constexpr auto waveform    = "waveform";

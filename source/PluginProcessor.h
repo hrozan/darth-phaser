@@ -58,8 +58,7 @@ private:
 
     // Cached raw pointers: looking parameters up by string on the audio thread is wasteful.
     std::atomic<float>* rateParam        = nullptr;
-    std::atomic<float>* syncParam        = nullptr;
-    std::atomic<float>* divisionParam    = nullptr;
+    std::atomic<float>* syncModeParam    = nullptr;
     std::atomic<float>* depthParam       = nullptr;
     std::atomic<float>* stereoPhaseParam = nullptr;
     std::atomic<float>* waveformParam    = nullptr;

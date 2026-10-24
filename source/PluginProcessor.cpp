@@ -15,8 +15,7 @@ DarthPhaserProcessor::DarthPhaserProcessor()
       parameters (*this, nullptr, juce::Identifier (stateIdentifier), Params::createLayout())
 {
     rateParam        = parameters.getRawParameterValue (ParamID::rate);
-    syncParam        = parameters.getRawParameterValue (ParamID::sync);
-    divisionParam    = parameters.getRawParameterValue (ParamID::division);
+    syncModeParam    = parameters.getRawParameterValue (ParamID::syncMode);
     depthParam       = parameters.getRawParameterValue (ParamID::depth);
     stereoPhaseParam = parameters.getRawParameterValue (ParamID::stereoPhase);
     waveformParam    = parameters.getRawParameterValue (ParamID::waveform);
@@ -35,8 +34,7 @@ PhaserEngine::Settings DarthPhaserProcessor::gatherSettings() const
 {
     PhaserEngine::Settings s;
 
-    s.rateHz = SyncMath::lfoRateHz (syncParam->load() > 0.5f,
-                                    juce::roundToInt (divisionParam->load()),
+    s.rateHz = SyncMath::lfoRateHz (juce::roundToInt (syncModeParam->load()),
                                     rateParam->load(),
                                     hostBpm);
 

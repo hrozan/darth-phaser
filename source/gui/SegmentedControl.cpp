@@ -38,10 +38,12 @@ void SegmentedControl::mouseDown (const juce::MouseEvent& e)
 {
     const auto index = indexAt (e.position);
 
+    // Show the click straight away. If the host refuses the change, the parameter
+    // callback puts the selection back where it belongs.
+    setSelectedIndex (index);
+
     if (onSelect != nullptr)
         onSelect (index);
-    else
-        setSelectedIndex (index);
 }
 
 void SegmentedControl::paint (juce::Graphics& g)
