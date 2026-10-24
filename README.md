@@ -129,10 +129,15 @@ Theme: near-black chassis with crimson rim light (Darth Vader), MXR Phase 90 ora
 primary accent with knurled black knobs and white pointers, laid out in the dense multi-section
 style of HY-Phaser. Panel size is 960x600.
 
-The mockup is currently **ahead of the editor** in one place: it has a dedicated STEREO
-section holding the Stereo Phase knob and an L/R offset display, where `PluginEditor.cpp`
-still keeps that knob inside MODULATION. Porting it means moving one knob and splitting the
-right column of the lower row.
+The mockup is currently **ahead of the editor** in three places, none of them ported yet:
+
+| In the mockup | In `PluginEditor.cpp` today |
+| --- | --- |
+| Dedicated STEREO section with the Phase knob and an L/R offset display | Phase knob sits inside MODULATION |
+| LFO / SWEEP shows only the red LFO trace | `LfoScope` also draws the live response curve above it |
+| New / Save / Delete icons beside the preset display | Preset stepper only, six read-only factory presets |
+
+The preset icons imply user presets stored on disk, which the plugin does not have yet.
 
 ## Editor setup (clangd / Neovim)
 
