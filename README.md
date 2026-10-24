@@ -43,10 +43,30 @@ plugin folder (`~/Library/Audio/Plug-Ins/VST3` on macOS).
 open "build/DarkPhaser_artefacts/Release/Standalone/Dark Phaser.app"
 ```
 
+## Editor setup (clangd / Neovim)
+
+`CMAKE_EXPORT_COMPILE_COMMANDS` is on, so configuring the project writes
+`build/compile_commands.json` and symlinks it to the project root. That file is what tells
+clangd where the JUCE headers and the generated `JucePlugin_*` defines live — without it every
+`#include <juce_.../...>` is reported as "file not found".
+
+So run the configure step at least once before opening the project:
+
+```sh
+cmake -B build
+```
+
+Then restart the language server (`:LspRestart` in Neovim). Reconfigure whenever you add a
+source file or change `CMakeLists.txt`, so the database stays in sync.
+
+`compile_commands.json` is generated and git-ignored; `.clangd` points clangd at it and is
+checked in.
+
 ## Layout
 
 ```
 CMakeLists.txt            # build definition, JUCE dependency, plugin metadata
+.clangd                   # points clangd at the generated compile database
 source/
   PluginProcessor.h/.cpp  # AudioProcessor, parameter state, audio callback
   PluginEditor.h/.cpp     # plugin UI
