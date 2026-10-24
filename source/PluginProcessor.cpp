@@ -1,5 +1,6 @@
 #include "PluginProcessor.h"
 
+#include "Parameters.h"
 #include "PluginEditor.h"
 
 namespace
@@ -11,24 +12,69 @@ DarthPhaserProcessor::DarthPhaserProcessor()
     : AudioProcessor (BusesProperties()
                           .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-      parameters (*this, nullptr, juce::Identifier (stateIdentifier), createParameterLayout())
+      parameters (*this, nullptr, juce::Identifier (stateIdentifier), Params::createLayout())
 {
+    rateParam        = parameters.getRawParameterValue (ParamID::rate);
+    syncParam        = parameters.getRawParameterValue (ParamID::sync);
+    divisionParam    = parameters.getRawParameterValue (ParamID::division);
+    depthParam       = parameters.getRawParameterValue (ParamID::depth);
+    stereoPhaseParam = parameters.getRawParameterValue (ParamID::stereoPhase);
+    waveformParam    = parameters.getRawParameterValue (ParamID::waveform);
+    stagesParam      = parameters.getRawParameterValue (ParamID::stages);
+    centreParam      = parameters.getRawParameterValue (ParamID::centre);
+    spreadParam      = parameters.getRawParameterValue (ParamID::spread);
+    feedbackParam    = parameters.getRawParameterValue (ParamID::feedback);
+    dampingParam     = parameters.getRawParameterValue (ParamID::damping);
+    mixParam         = parameters.getRawParameterValue (ParamID::mix);
+    levelParam       = parameters.getRawParameterValue (ParamID::level);
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout DarthPhaserProcessor::createParameterLayout()
+PhaserEngine::Settings DarthPhaserProcessor::gatherSettings() const
 {
-    // Phaser parameters (rate, depth, centre frequency, feedback, stages, mix)
-    // will be declared here once the DSP lands.
-    return {};
+    PhaserEngine::Settings s;
+
+    if (syncParam->load() > 0.5f)
+    {
+        const auto index = juce::jlimit (0, static_cast<int> (Params::divisionBeats.size()) - 1,
+                                         static_cast<int> (divisionParam->load()));
+        const auto beats = Params::divisionBeats[static_cast<size_t> (index)];
+
+        // one LFO cycle per `beats` beats
+        s.rateHz = static_cast<float> (hostBpm / 60.0 / beats);
+    }
+    else
+    {
+        s.rateHz = rateParam->load();
+    }
+
+    const auto stageIndex = juce::jlimit (0, static_cast<int> (Params::stageCounts.size()) - 1,
+                                          static_cast<int> (stagesParam->load()));
+
+    s.depth       = depthParam->load() * 0.01f;
+    s.stereoPhase = stereoPhaseParam->load() / 360.0f;
+    s.waveform    = static_cast<PhaserEngine::Waveform> (juce::jlimit (0, 3, static_cast<int> (waveformParam->load())));
+    s.stages      = Params::stageCounts[static_cast<size_t> (stageIndex)];
+    s.centreHz    = centreParam->load();
+    s.spread      = spreadParam->load() * 0.01f;
+    s.feedback    = feedbackParam->load() * 0.01f;
+    s.damping     = dampingParam->load() * 0.01f;
+    s.mix         = mixParam->load() * 0.01f;
+    s.levelGain   = juce::Decibels::decibelsToGain (levelParam->load());
+
+    return s;
 }
 
 void DarthPhaserProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    juce::ignoreUnused (sampleRate, samplesPerBlock);
+    juce::ignoreUnused (samplesPerBlock);
+
+    engine.setSettings (gatherSettings());
+    engine.prepare (sampleRate, juce::jmax (getTotalNumInputChannels(), getTotalNumOutputChannels()));
 }
 
 void DarthPhaserProcessor::releaseResources()
 {
+    engine.reset();
 }
 
 bool DarthPhaserProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
@@ -51,7 +97,15 @@ void DarthPhaserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
     for (auto channel = getTotalNumInputChannels(); channel < getTotalNumOutputChannels(); ++channel)
         buffer.clear (channel, 0, buffer.getNumSamples());
 
-    // Pass-through for now: the phaser is applied here.
+    if (auto* playHead = getPlayHead())
+        if (const auto position = playHead->getPosition())
+            if (const auto bpm = position->getBpm())
+                hostBpm = *bpm;
+
+    engine.setSettings (gatherSettings());
+    engine.process (buffer.getArrayOfWritePointers(),
+                    juce::jmin (buffer.getNumChannels(), PhaserEngine::maxChannels),
+                    buffer.getNumSamples());
 }
 
 juce::AudioProcessorEditor* DarthPhaserProcessor::createEditor()

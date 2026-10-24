@@ -2,7 +2,42 @@
 
 A phaser audio plugin built with [JUCE](https://juce.com) and CMake.
 
-> Status: project scaffold. The audio path is currently pass-through — the phaser DSP is next.
+> Status: DSP implemented and verified. The designed GUI is next — the editor currently shows
+> generic host controls under the title bar.
+
+## How it works
+
+A cascade of first-order all-pass filters, summed back with the dry signal. Each all-pass
+contributes frequency-dependent phase shift; where the shifted signal lands 180 degrees out
+with the dry path, it cancels and a notch appears. An LFO sweeps the all-pass break frequency,
+which drags the notches up and down the spectrum.
+
+`source/PhaserEngine.{h,cpp}` holds the DSP and deliberately depends on no JUCE types, so it
+can be compiled and tested on its own. `source/Parameters.{h,cpp}` declares the parameters and
+`PluginProcessor` maps them onto the engine each block.
+
+| Control | Range | Notes |
+| --- | --- | --- |
+| Speed | 0.01-10 Hz | Ignored when Tempo Sync is on |
+| Tempo Sync / Division | 1/1 to 1/32, plus 1/4T and 1/8T | Follows the host BPM |
+| Depth | 0-100 % | Full depth sweeps +/- 2 octaves around Centre |
+| Stereo Phase | 0-180 deg | LFO offset between L and R |
+| Waveform | Sine, Triangle, Square, Random | Random is sample and hold, per channel |
+| Stages | 2, 4, 6, 8, 12 | Notch count is half the stage count |
+| Centre | 80 Hz - 5 kHz | Middle of the sweep |
+| Spread | 0-100 % | Fans the stages across +/- 1 octave |
+| Feedback | -95 to +95 % | Negative inverts; sharpens the notches |
+| Damping | 0-100 % | Low-pass inside the feedback path, 20 kHz down to 200 Hz |
+| Mix | 0-100 % | **50 % gives the deepest notches** |
+| Level | -24 to +12 dB | Output gain |
+
+Mix is a dry/wet crossfade against the all-pass chain, which is the conventional phaser
+topology. That means 100 % wet is *all-pass* and sounds close to unprocessed: the notches come
+from cancellation against the dry path, so they are deepest at 50 %.
+
+Coefficients are refreshed every 16 samples rather than per sample, since a `tan()` per stage
+per sample is wasteful and inaudible at LFO rates. Feedback is soft-clipped with `tanh` and
+clamped to +/- 0.95 so high settings cannot run away.
 
 ## Formats
 

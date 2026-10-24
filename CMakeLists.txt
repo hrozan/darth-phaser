@@ -46,6 +46,8 @@ juce_add_plugin(DarthPhaser
     COPY_PLUGIN_AFTER_BUILD     TRUE)
 
 target_sources(DarthPhaser PRIVATE
+    source/Parameters.cpp
+    source/PhaserEngine.cpp
     source/PluginProcessor.cpp
     source/PluginEditor.cpp)
 

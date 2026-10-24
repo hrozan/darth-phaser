@@ -1,7 +1,8 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
-#include <juce_dsp/juce_dsp.h>
+
+#include "PhaserEngine.h"
 
 class DarthPhaserProcessor final : public juce::AudioProcessor
 {
@@ -36,9 +37,27 @@ public:
     juce::AudioProcessorValueTreeState& getValueTreeState() { return parameters; }
 
 private:
-    static juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
+    PhaserEngine::Settings gatherSettings() const;
 
     juce::AudioProcessorValueTreeState parameters;
+    PhaserEngine engine;
+
+    // Cached raw pointers: looking parameters up by string on the audio thread is wasteful.
+    std::atomic<float>* rateParam        = nullptr;
+    std::atomic<float>* syncParam        = nullptr;
+    std::atomic<float>* divisionParam    = nullptr;
+    std::atomic<float>* depthParam       = nullptr;
+    std::atomic<float>* stereoPhaseParam = nullptr;
+    std::atomic<float>* waveformParam    = nullptr;
+    std::atomic<float>* stagesParam      = nullptr;
+    std::atomic<float>* centreParam      = nullptr;
+    std::atomic<float>* spreadParam      = nullptr;
+    std::atomic<float>* feedbackParam    = nullptr;
+    std::atomic<float>* dampingParam     = nullptr;
+    std::atomic<float>* mixParam         = nullptr;
+    std::atomic<float>* levelParam       = nullptr;
+
+    double hostBpm = 120.0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DarthPhaserProcessor)
 };

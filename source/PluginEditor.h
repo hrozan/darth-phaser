@@ -14,7 +14,13 @@ public:
     void resized() override;
 
 private:
+    static constexpr int headerHeight = 72;
+
     DarthPhaserProcessor& processorRef;
+
+    // Placeholder until the designed panel in design/ is built: generic controls so
+    // the DSP can be driven from a host today.
+    juce::GenericAudioProcessorEditor controls;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DarthPhaserEditor)
 };
