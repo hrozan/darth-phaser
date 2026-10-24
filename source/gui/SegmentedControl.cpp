@@ -3,7 +3,7 @@
 #include "Theme.h"
 
 SegmentedControl::SegmentedControl (juce::RangedAudioParameter& parameter, const juce::StringArray& options)
-    : param (parameter), items (options),
+    : items (options),
       attachment (parameter,
                   [this] (float newValue)
                   {

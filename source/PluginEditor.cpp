@@ -392,7 +392,7 @@ private:
 
 //==============================================================================
 DarthPhaserEditor::DarthPhaserEditor (DarthPhaserProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p)
+    : AudioProcessorEditor (&p)
 {
     setLookAndFeel (&lookAndFeel);
 

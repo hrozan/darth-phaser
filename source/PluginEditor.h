@@ -21,7 +21,6 @@ public:
 private:
     class Content;
 
-    DarthPhaserProcessor& processorRef;
     DarthLookAndFeel lookAndFeel;
 
     std::unique_ptr<Content> content;

@@ -16,7 +16,6 @@ public:
 private:
     int indexAt (juce::Point<float>) const;
 
-    juce::RangedAudioParameter& param;
     juce::StringArray items;
     int selected = 0;
 
