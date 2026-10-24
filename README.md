@@ -100,7 +100,8 @@ Damp), LFO / SWEEP (sync selector and scope), STEREO (Phase and the L/R offset d
 OUTPUT (Mix, Level, meters).
 
 The scope shows the selected LFO waveform scrolling under a playhead driven by the engine's
-real phase, not a canned animation. `RESO` is `DAMP`, since a separate resonance control
+real phase, not a canned animation. While tempo sync is on, SPEED greys out and its readout
+shows the rate the host tempo is producing rather than the now-unused knob value. `RESO` is `DAMP`, since a separate resonance control
 would duplicate Feedback.
 
 ### Presets
@@ -114,7 +115,8 @@ followed by any user presets found in:
 
 A user preset is the plugin's full parameter state as XML. The header icons create a new one
 (prompting for a name), overwrite the current one, and move it to the trash; save and delete
-are disabled while a factory preset is selected. The power LED is a `bypass` parameter
+are disabled while a factory preset is selected, and a failure is reported rather than
+swallowed. Deleting only ever moves to the trash, never hard-deletes. The power LED is a `bypass` parameter
 exposed to the host through `getBypassParameter()`.
 
 Fonts are Futura for the wordmark and Avenir Next Condensed for labels, both macOS system

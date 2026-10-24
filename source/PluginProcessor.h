@@ -42,6 +42,7 @@ public:
 
     // ---- display taps for the editor ----
     float getLfoPhase() const noexcept { return engine.getLfoPhase(); }
+    float getEffectiveRateHz() const noexcept { return effectiveRate.load (std::memory_order_relaxed); }
     float getModulatedCentreHz() const noexcept { return engine.getModulatedCentreHz(); }
     float getOutputPeak (int channel) const noexcept
     {
@@ -75,6 +76,7 @@ private:
     double hostBpm = 120.0;
 
     std::array<std::atomic<float>, 2> outputPeak { };
+    std::atomic<float> effectiveRate { 1.42f };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (DarthPhaserProcessor)
 };

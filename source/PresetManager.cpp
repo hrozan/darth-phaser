@@ -9,8 +9,14 @@ PresetManager::PresetManager (juce::AudioProcessorValueTreeState& s) : state (s)
 
 juce::File PresetManager::directory()
 {
-    return juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory)
-        .getChildFile ("Rozan Audio")
+    // On macOS userApplicationDataDirectory is ~/Library, not ~/Library/Application Support.
+    auto base = juce::File::getSpecialLocation (juce::File::userApplicationDataDirectory);
+
+   #if JUCE_MAC
+    base = base.getChildFile ("Application Support");
+   #endif
+
+    return base.getChildFile ("Rozan Audio")
         .getChildFile ("Darth Phaser")
         .getChildFile ("Presets");
 }
@@ -134,7 +140,7 @@ bool PresetManager::deleteCurrent()
 
     const auto file = entries[static_cast<size_t> (current)].file;
 
-    if (! file.moveToTrash() && ! file.deleteFile())
+    if (! file.moveToTrash())
         return false;
 
     const auto previous = juce::jmax (0, current - 1);

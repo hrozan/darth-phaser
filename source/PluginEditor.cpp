@@ -207,7 +207,8 @@ private:
 }
 
 //==============================================================================
-class DarthPhaserEditor::Content final : public juce::Component
+class DarthPhaserEditor::Content final : public juce::Component,
+                                        private juce::Timer
 {
 public:
     explicit Content (DarthPhaserProcessor& p)
@@ -273,12 +274,18 @@ public:
         outputPanel.addAndMakeVisible (level);
         outputPanel.addAndMakeVisible (meter);
 
-        newPreset.onClick    = [this] { promptForName(); };
-        savePreset.onClick   = [this] { proc.getPresetManager().overwriteCurrent(); };
+        newPreset.onClick  = [this] { promptForName(); };
+        savePreset.onClick = [this]
+        {
+            if (! proc.getPresetManager().overwriteCurrent())
+                reportFailure ("Could not save the preset.");
+        };
         deletePreset.onClick = [this] { confirmDelete(); };
 
         proc.getPresetManager().onChange = [this] { presetChanged(); };
         presetChanged();
+
+        startTimerHz (10);
 
         setSize (DarthPhaserEditor::designWidth, DarthPhaserEditor::designHeight);
     }
@@ -450,6 +457,28 @@ public:
     }
 
 private:
+    /** While the LFO follows the host, SPEED is driven by the tempo, not the knob. */
+    void timerCallback() override
+    {
+        auto* syncValue = state.getRawParameterValue (ParamID::sync);
+        const auto synced = syncValue != nullptr && syncValue->load() > 0.5f;
+        const auto rate = proc.getEffectiveRateHz();
+
+        if (synced != wasSynced)
+        {
+            speed.setDimmed (synced);
+            wasSynced = synced;
+        }
+
+        speed.setOverrideText (synced ? juce::String (rate, 2) + " Hz" : juce::String());
+    }
+
+    static void reportFailure (const juce::String& message)
+    {
+        juce::AlertWindow::showMessageBoxAsync (juce::MessageBoxIconType::WarningIcon,
+                                                "Darth Phaser", message);
+    }
+
     void presetChanged()
     {
         const auto factory = proc.getPresetManager().currentIsFactory();
@@ -475,7 +504,10 @@ private:
                 if (result != 1 || safeThis == nullptr || safeWindow == nullptr)
                     return;
 
-                safeThis->proc.getPresetManager().saveAs (safeWindow->getTextEditorContents ("name"));
+                if (! safeThis->proc.getPresetManager().saveAs (safeWindow->getTextEditorContents ("name")))
+                    safeThis->reportFailure ("Could not save the preset. Check that "
+                                             + PresetManager::directory().getFullPathName()
+                                             + " is writable.");
             }), true);
     }
 
@@ -495,8 +527,11 @@ private:
             juce::ModalCallbackFunction::create (
                 [safeThis] (int result)
                 {
-                    if (result == 1 && safeThis != nullptr)
-                        safeThis->proc.getPresetManager().deleteCurrent();
+                    if (result != 1 || safeThis == nullptr)
+                        return;
+
+                    if (! safeThis->proc.getPresetManager().deleteCurrent())
+                        safeThis->reportFailure ("Could not move the preset to the trash.");
                 }));
     }
 
@@ -517,6 +552,7 @@ private:
 
     std::unique_ptr<juce::Drawable> helmet;
     juce::Rectangle<int> header, footer, meterLabel;
+    bool wasSynced = false;
 };
 
 //==============================================================================

@@ -13,12 +13,19 @@ public:
     void resized() override;
     void paint (juce::Graphics&) override;
 
+    /** Shows this instead of the parameter's own value; empty restores it. */
+    void setOverrideText (const juce::String&);
+
+    /** Greys the knob out and stops it responding, for a parameter the host overrides. */
+    void setDimmed (bool);
+
 private:
     void refreshReadout();
 
     juce::RangedAudioParameter& param;
     juce::String captionText;
     juce::String readout;
+    juce::String overrideText;
     bool isHero;
 
     juce::Slider slider;

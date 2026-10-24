@@ -58,7 +58,7 @@ void LfoScope::paint (juce::Graphics& g)
     const auto waveform = [this]
     {
         if (auto* v = proc.getValueTreeState().getRawParameterValue (ParamID::waveform))
-            return static_cast<int> (v->load());
+            return juce::roundToInt (v->load());
 
         return 0;
     }();

@@ -35,6 +35,21 @@ void Knob::refreshReadout()
     readout = param.getText (normalised, 24);
 }
 
+void Knob::setOverrideText (const juce::String& text)
+{
+    if (overrideText != text)
+    {
+        overrideText = text;
+        repaint();
+    }
+}
+
+void Knob::setDimmed (bool shouldDim)
+{
+    slider.setEnabled (! shouldDim);
+    setAlpha (shouldDim ? 0.5f : 1.0f);
+}
+
 void Knob::resized()
 {
     auto area = getLocalBounds();
@@ -56,5 +71,6 @@ void Knob::paint (juce::Graphics& g)
 
     g.setColour (Theme::amberBright);
     g.setFont (Theme::label (isHero ? 15.0f : 12.0f, true, 0.06f));
-    g.drawText (readout, valueRow, juce::Justification::centredTop, false);
+    g.drawText (overrideText.isNotEmpty() ? overrideText : readout,
+                valueRow, juce::Justification::centredTop, false);
 }

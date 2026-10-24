@@ -35,26 +35,18 @@ PhaserEngine::Settings DarthPhaserProcessor::gatherSettings() const
 {
     PhaserEngine::Settings s;
 
-    if (syncParam->load() > 0.5f)
-    {
-        const auto index = juce::jlimit (0, static_cast<int> (Params::divisionBeats.size()) - 1,
-                                         static_cast<int> (divisionParam->load()));
-        const auto beats = Params::divisionBeats[static_cast<size_t> (index)];
+    s.rateHz = SyncMath::lfoRateHz (syncParam->load() > 0.5f,
+                                    juce::roundToInt (divisionParam->load()),
+                                    rateParam->load(),
+                                    hostBpm);
 
-        // one LFO cycle per `beats` beats
-        s.rateHz = static_cast<float> (hostBpm / 60.0 / beats);
-    }
-    else
-    {
-        s.rateHz = rateParam->load();
-    }
-
+    // Choice parameters come back as floats; rounding avoids truncating 2.9999 to 2.
     const auto stageIndex = juce::jlimit (0, static_cast<int> (Params::stageCounts.size()) - 1,
-                                          static_cast<int> (stagesParam->load()));
+                                          juce::roundToInt (stagesParam->load()));
 
     s.depth       = depthParam->load() * 0.01f;
     s.stereoPhase = stereoPhaseParam->load() / 360.0f;
-    s.waveform    = static_cast<PhaserEngine::Waveform> (juce::jlimit (0, 3, static_cast<int> (waveformParam->load())));
+    s.waveform    = static_cast<PhaserEngine::Waveform> (juce::jlimit (0, 3, juce::roundToInt (waveformParam->load())));
     s.stages      = Params::stageCounts[static_cast<size_t> (stageIndex)];
     s.centreHz    = centreParam->load();
     s.spread      = spreadParam->load() * 0.01f;
@@ -113,7 +105,10 @@ void DarthPhaserProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce:
         engine.reset();
     else
     {
-        engine.setSettings (gatherSettings());
+        const auto settings = gatherSettings();
+        effectiveRate.store (settings.rateHz, std::memory_order_relaxed);
+
+        engine.setSettings (settings);
         engine.process (buffer.getArrayOfWritePointers(),
                         juce::jmin (buffer.getNumChannels(), PhaserEngine::maxChannels),
                         buffer.getNumSamples());

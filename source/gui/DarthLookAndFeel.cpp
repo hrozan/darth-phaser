@@ -24,8 +24,11 @@ void DarthLookAndFeel::drawRotarySlider (juce::Graphics& g, int x, int y, int wi
     const auto accent = slider.findColour (juce::Slider::rotarySliderFillColourId);
 
     // ---- value ring ----
-    const auto ringR = radius - 2.0f;
-    const auto thickness = juce::jmax (2.5f, size * 0.065f);
+    // The ring is inset by half its own thickness so the stroke stays inside the
+    // component; a wider glow pass would otherwise be clipped flat on the outside.
+    const auto thickness = juce::jmax (2.0f, size * 0.052f);
+    const auto glow = thickness * 1.9f;
+    const auto ringR = radius - glow * 0.5f - 1.0f;
 
     juce::Path track;
     track.addCentredArc (centre.x, centre.y, ringR, ringR, 0.0f, startAngle, endAngle, true);
@@ -33,22 +36,22 @@ void DarthLookAndFeel::drawRotarySlider (juce::Graphics& g, int x, int y, int wi
     g.strokePath (track, juce::PathStrokeType (thickness, juce::PathStrokeType::curved,
                                                juce::PathStrokeType::rounded));
 
-    if (sliderPos > 0.001f)
+    if (sliderPos > 0.004f)
     {
         juce::Path fill;
         fill.addCentredArc (centre.x, centre.y, ringR, ringR, 0.0f, startAngle, angle, true);
 
-        // glow pass, then the crisp arc
-        g.setColour (accent.withAlpha (0.28f));
-        g.strokePath (fill, juce::PathStrokeType (thickness * 2.6f, juce::PathStrokeType::curved,
-                                                  juce::PathStrokeType::rounded));
+        // butt caps on the glow, so the arc start does not bloom into a blob
+        g.setColour (accent.withAlpha (0.18f));
+        g.strokePath (fill, juce::PathStrokeType (glow, juce::PathStrokeType::curved,
+                                                  juce::PathStrokeType::butt));
         g.setColour (accent);
         g.strokePath (fill, juce::PathStrokeType (thickness, juce::PathStrokeType::curved,
                                                   juce::PathStrokeType::rounded));
     }
 
     // ---- knurled cap ----
-    const auto capR = radius * 0.70f;
+    const auto capR = radius * 0.66f;
     const auto cap  = juce::Rectangle<float> (capR * 2.0f, capR * 2.0f).withCentre (centre);
 
     g.setColour (juce::Colour (0xff0b0b0e));

@@ -2,6 +2,8 @@
 
 #include <juce_audio_processors/juce_audio_processors.h>
 
+#include "SyncMath.h"
+
 namespace ParamID
 {
 inline constexpr auto rate        = "rate";
@@ -24,14 +26,6 @@ namespace Params
 {
 /** Stage counts behind the STAGES selector, in choice order. */
 inline constexpr std::array<int, 5> stageCounts { 2, 4, 6, 8, 12 };
-
-/** Cycle length in beats for each entry of the DIVISION selector. */
-inline constexpr std::array<double, 3> divisionBeats
-{
-    2.0,  // 1/2
-    1.0,  // 1/4
-    0.5   // 1/8
-};
 
 /** Labels for the sync selector: FREE followed by each division. */
 inline const juce::StringArray syncChoices { "FREE", "1/2", "1/4", "1/8" };
