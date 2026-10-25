@@ -46,6 +46,29 @@ clamped to +/- 0.95 so high settings cannot run away.
 Audio Unit is not built yet because it needs a full Xcode install (the Command Line Tools alone
 are not enough). Add `AU` to `FORMATS` in `CMakeLists.txt` once Xcode is available.
 
+## Continuous integration and downloads
+
+`.github/workflows/build.yml` builds Release on macOS, Windows and Linux for every push and
+pull request, and uploads a zip per platform as a workflow artifact. Each zip unpacks to a
+`DarthPhaser/` folder holding `VST3/`, `Standalone/` and `INSTALL.txt`.
+
+Pushing a `v*` tag additionally publishes a GitHub Release with those three zips attached:
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+CI passes `-DDARTHPHASER_INSTALL_AFTER_BUILD=OFF` so the runners package the artefacts
+instead of copying them into plugin folders. Local builds still install by default; pass the
+same flag to opt out.
+
+`.github/workflows/pages.yml` publishes `docs/` to GitHub Pages, a landing page in the
+plugin's own palette that links to the latest release assets and carries the install steps.
+It needs **Settings - Pages - Source: GitHub Actions** enabled once. GitHub Pages on a
+private repository requires a paid plan; on the free plan the repository has to be public for
+the site and its download links to work.
+
 ## Requirements
 
 - CMake 3.22+

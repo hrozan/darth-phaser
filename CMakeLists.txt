@@ -22,6 +22,10 @@ if(CMAKE_EXPORT_COMPILE_COMMANDS AND NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_
         SYMBOLIC)
 endif()
 
+# CI builds package the artefacts instead of installing them into the plugin folders.
+option(DARTHPHASER_INSTALL_AFTER_BUILD
+       "Copy the plugin into the user plugin folders after a successful build" ON)
+
 include(FetchContent)
 
 FetchContent_Declare(JUCE
@@ -43,7 +47,7 @@ juce_add_plugin(DarthPhaser
     NEEDS_MIDI_OUTPUT           FALSE
     IS_MIDI_EFFECT              FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
-    COPY_PLUGIN_AFTER_BUILD     TRUE)
+    COPY_PLUGIN_AFTER_BUILD     ${DARTHPHASER_INSTALL_AFTER_BUILD})
 
 target_sources(DarthPhaser PRIVATE
     source/Parameters.cpp

@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Darth Phaser</title>
+<meta name="description" content="A stereo phase shifter built with JUCE. Free downloads for macOS, Windows and Linux.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&family=Barlow+Semi+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#09090b; --panel-a:#15151a; --panel-b:#0d0d11; --edge:#000;
+  --hilite:rgba(255,255,255,.07); --display:#07070a;
+  --amber:#ff7a18; --amber-soft:#ffae52; --saber:#ff2233;
+  --text:#eceae6; --dim:#79766f; --faint:#4e4c48;
+  --display-font:"Jost",system-ui,sans-serif;
+  --label-font:"Barlow Semi Condensed","Helvetica Neue",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);font-family:var(--label-font);
+  font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(120% 70% at 50% -10%, rgba(255,34,51,.15), transparent 60%),
+    radial-gradient(90% 50% at 50% 100%, rgba(255,122,24,.07), transparent 70%);
+  background-repeat:no-repeat;background-attachment:fixed;
+}
+.wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+
+/* ---- header ---- */
+header{padding:26px 0 10px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand svg{width:44px;height:44px;flex:none;filter:drop-shadow(0 0 14px rgba(255,34,51,.5))}
+.brand h1{
+  font-family:var(--display-font);font-weight:400;font-size:clamp(26px,5.6vw,38px);
+  letter-spacing:.16em;line-height:1;
+  background:linear-gradient(#fff,#b9b4ad 50%,#6f6a63);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.brand p{font-size:11px;letter-spacing:.4em;color:var(--dim);text-transform:uppercase;margin-top:5px}
+.ghlink{margin-left:auto;font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dim);text-decoration:none;border:1px solid #000;border-radius:5px;
+  padding:9px 14px;background:linear-gradient(var(--panel-a),var(--panel-b));
+  box-shadow:inset 0 1px 0 var(--hilite)}
+.ghlink:hover{color:var(--amber-soft);border-color:#2a2a33}
+
+/* ---- hero ---- */
+.hero{padding:34px 0 10px;text-align:center}
+.hero h2{font-family:var(--display-font);font-weight:300;font-size:clamp(22px,4.4vw,32px);
+  letter-spacing:.02em;line-height:1.25;max-width:22ch;margin:0 auto 14px}
+.hero h2 em{font-style:normal;color:var(--amber)}
+.hero .sub{color:var(--dim);max-width:60ch;margin:0 auto 26px}
+.shot{width:100%;border-radius:8px;border:1px solid #000;display:block;
+  box-shadow:0 20px 60px rgba(0,0,0,.75),0 0 70px rgba(255,34,51,.1)}
+
+/* ---- sections ---- */
+section{padding:46px 0 8px}
+.cap{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.cap h3{font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--amber);
+  text-shadow:0 0 12px rgba(255,122,24,.45);font-weight:600}
+.cap .rule{flex:1;height:1px;background:linear-gradient(90deg,rgba(255,122,24,.3),transparent)}
+
+.panel{background:linear-gradient(var(--panel-a),var(--panel-b));border:1px solid #000;
+  border-radius:6px;box-shadow:inset 0 1px 0 var(--hilite),0 2px 6px rgba(0,0,0,.6);padding:20px}
+
+/* ---- downloads ---- */
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.dl{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:inherit;
+  background:linear-gradient(var(--panel-a),var(--panel-b));border:1px solid #000;
+  border-radius:6px;box-shadow:inset 0 1px 0 var(--hilite),0 2px 6px rgba(0,0,0,.6);
+  padding:18px 20px;transition:border-color .15s,transform .15s}
+.dl:hover{border-color:rgba(255,122,24,.5);transform:translateY(-2px)}
+.dl .os{font-family:var(--display-font);font-size:19px;letter-spacing:.08em}
+.dl .meta{font-size:12.5px;color:var(--dim);letter-spacing:.04em}
+.dl .go{margin-top:10px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--amber)}
+.note{margin-top:14px;font-size:13.5px;color:var(--dim)}
+.note a{color:var(--amber-soft)}
+
+/* ---- install ---- */
+.steps{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.steps h4{font-family:var(--display-font);font-size:17px;letter-spacing:.08em;margin-bottom:10px;
+  padding-bottom:8px;border-bottom:1px solid #000;box-shadow:0 1px 0 var(--hilite)}
+.steps ol{margin-left:17px;font-size:14.5px;color:#c9c5c0}
+.steps li{margin-bottom:9px}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+pre{background:var(--display);border:1px solid #000;border-radius:5px;padding:11px 13px;
+  margin-top:8px;font-size:12.5px;color:var(--amber-soft);line-height:1.55;
+  white-space:pre-wrap;overflow-wrap:anywhere}
+code.inline{background:var(--display);border:1px solid #000;border-radius:4px;
+  padding:1px 6px;font-size:12.5px;color:var(--amber-soft)}
+
+/* ---- controls table ---- */
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid #16161c}
+th{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:600}
+td:first-child{color:var(--amber-soft);white-space:nowrap}
+td:nth-child(2){color:var(--dim);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+
+footer{margin-top:54px;padding:22px 0 34px;border-top:1px solid #16161c;
+  display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;
+  font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint)}
+footer a{color:var(--faint);text-decoration:none}
+footer a:hover{color:var(--amber)}
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:620px){
+  section{padding:34px 0 4px}
+  .panel{padding:16px}
+  /* let the nowrap columns breathe rather than forcing the page wide */
+  td:first-child, td:nth-child(2){white-space:normal}
+  th,td{padding:8px 8px;font-size:13.5px}
+  .brand{flex-wrap:wrap}
+  .ghlink{margin-left:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 64 64" aria-hidden="true">
+        <defs>
+          <linearGradient id="hm" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#4a4a54"/><stop offset="38%" stop-color="#1b1b21"/>
+            <stop offset="1" stop-color="#050507"/>
+          </linearGradient>
+          <linearGradient id="lens" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ff5563"/><stop offset="1" stop-color="#a10d19"/>
+          </linearGradient>
+        </defs>
+        <path d="M32 4c-10 0-17 7-18 17l-1 11c-1 7-3 13-6 19l7 4c5 2 11 3 18 3s13-1 18-3l7-4c-3-6-5-12-6-19l-1-11c-1-10-8-17-18-17z" fill="url(#hm)" stroke="#ff2233" stroke-width="1.1" stroke-opacity=".45"/>
+        <path d="M13 24c5-5 11-7 19-7s14 2 19 7" fill="none" stroke="#000" stroke-width="2.4"/>
+        <path d="M15 28l12-3 1 8-11 2z" fill="url(#lens)"/>
+        <path d="M49 28l-12-3-1 8 11 2z" fill="url(#lens)"/>
+        <path d="M32 20l-4 19h8z" fill="#0a0a0d" stroke="#3a3a44" stroke-width=".7"/>
+        <path d="M24 40h16l-2 11H26z" fill="#07070a" stroke="#3a3a44" stroke-width=".8"/>
+        <path d="M27 43h10M27.4 46h9.2M27.8 49h8.4" stroke="#ff7a18" stroke-width="1" stroke-opacity=".8"/>
+        <path d="M14 38h7l-1 6h-7zM50 38h-7l1 6h7z" fill="#0a0a0d" stroke="#33333c" stroke-width=".7"/>
+      </svg>
+      <div>
+        <h1>DARTH PHASER</h1>
+        <p>Stereo Phase Shifter</p>
+      </div>
+      <a class="ghlink" href="https://github.com/hrozan/darth-phaser">Source</a>
+    </div>
+  </header>
+
+  <div class="hero">
+    <h2>A phaser with its <em>notches</em> where you put them.</h2>
+    <p class="sub">Two to twelve all-pass stages, a tempo-syncable LFO, stereo offset and
+       damped feedback. VST3 and standalone, for macOS, Windows and Linux.</p>
+    <img class="shot" src="darth-phaser.png" alt="The Darth Phaser interface: modulation, phase engine, LFO, stereo and output panels on a black panel with orange controls.">
+  </div>
+
+  <section id="download">
+    <div class="cap"><h3>Download</h3><div class="rule"></div></div>
+    <div class="grid">
+      <a class="dl" href="https://github.com/hrozan/darth-phaser/releases/latest/download/DarthPhaser-macOS.zip">
+        <span class="os">macOS</span>
+        <span class="meta">VST3 + standalone &middot; universal, Intel and Apple silicon</span>
+        <span class="go">Download &rarr;</span>
+      </a>
+      <a class="dl" href="https://github.com/hrozan/darth-phaser/releases/latest/download/DarthPhaser-Windows.zip">
+        <span class="os">Windows</span>
+        <span class="meta">VST3 + standalone &middot; 64-bit</span>
+        <span class="go">Download &rarr;</span>
+      </a>
+      <a class="dl" href="https://github.com/hrozan/darth-phaser/releases/latest/download/DarthPhaser-Linux.zip">
+        <span class="os">Linux</span>
+        <span class="meta">VST3 + standalone &middot; x86-64</span>
+        <span class="go">Download &rarr;</span>
+      </a>
+    </div>
+    <p class="note">Every build is produced by
+      <a href="https://github.com/hrozan/darth-phaser/actions/workflows/build.yml">GitHub Actions</a>
+      from a tagged commit. Browse every version on the
+      <a href="https://github.com/hrozan/darth-phaser/releases">releases page</a>.
+      The builds are unsigned, so the first launch needs the extra step below.</p>
+  </section>
+
+  <section id="install">
+    <div class="cap"><h3>Install</h3><div class="rule"></div></div>
+    <div class="steps">
+
+      <div class="panel">
+        <h4>macOS</h4>
+        <ol>
+          <li>Unzip, then copy <code class="inline">Darth Phaser.vst3</code> into
+              <code class="inline">~/Library/Audio/Plug-Ins/VST3/</code></li>
+          <li>Clear the download quarantine, otherwise Gatekeeper blocks the unsigned build:
+            <pre>xattr -dr com.apple.quarantine \
+  ~/Library/Audio/Plug-Ins/VST3/"Darth Phaser.vst3"</pre>
+          </li>
+          <li>Rescan plugins in your DAW.</li>
+        </ol>
+      </div>
+
+      <div class="panel">
+        <h4>Windows</h4>
+        <ol>
+          <li>Unzip, then copy <code class="inline">Darth Phaser.vst3</code> into
+              <code class="inline">C:\Program Files\Common Files\VST3\</code></li>
+          <li>SmartScreen may warn about an unknown publisher on the standalone. Choose
+              <em>More info</em>, then <em>Run anyway</em>.</li>
+          <li>Rescan plugins in your DAW.</li>
+        </ol>
+      </div>
+
+      <div class="panel">
+        <h4>Linux</h4>
+        <ol>
+          <li>Unzip, then copy <code class="inline">Darth Phaser.vst3</code> into
+              <code class="inline">~/.vst3/</code></li>
+          <li>Mark the standalone executable if your DAW or desktop needs it:
+            <pre>chmod +x Standalone/"Darth Phaser"</pre>
+          </li>
+          <li>Rescan plugins in your DAW.</li>
+        </ol>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="controls">
+    <div class="cap"><h3>Controls</h3><div class="rule"></div></div>
+    <div class="panel">
+      <div class="table-scroll">
+      <table>
+        <thead><tr><th>Control</th><th>Range</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Speed</td><td>0.01&ndash;10 Hz</td><td>LFO rate, overridden while Sync is on</td></tr>
+          <tr><td>Sync</td><td>Free, 1/2, 1/4, 1/8</td><td>Locks the LFO to the host tempo</td></tr>
+          <tr><td>Depth</td><td>0&ndash;100 %</td><td>Full depth sweeps two octaves either side of Center</td></tr>
+          <tr><td>Waveform</td><td>Sine, Tri, Sqr, Rnd</td><td>Random is sample and hold, per channel</td></tr>
+          <tr><td>Stages</td><td>2, 4, 6, 8, 12</td><td>Notch count is half the stage count</td></tr>
+          <tr><td>Center</td><td>80 Hz &ndash; 5 kHz</td><td>Middle of the sweep</td></tr>
+          <tr><td>Spread</td><td>0&ndash;100 %</td><td>Fans the stages across an octave either side</td></tr>
+          <tr><td>Feedback</td><td>&minus;95 &ndash; +95 %</td><td>Sharpens the notches; negative inverts</td></tr>
+          <tr><td>Damp</td><td>0&ndash;100 %</td><td>Low-pass inside the feedback path</td></tr>
+          <tr><td>Phase</td><td>0&ndash;180&deg;</td><td>Offsets the right channel's LFO against the left</td></tr>
+          <tr><td>Mix</td><td>0&ndash;100 %</td><td>50 % gives the deepest notches</td></tr>
+          <tr><td>Level</td><td>&minus;24 &ndash; +12 dB</td><td>Output gain</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="source">
+    <div class="cap"><h3>Build it yourself</h3><div class="rule"></div></div>
+    <div class="panel">
+      <p style="color:var(--dim);font-size:14.5px">CMake fetches JUCE on the first configure,
+         so nothing else needs installing beyond a C++20 compiler.</p>
+      <pre>git clone https://github.com/hrozan/darth-phaser.git
+cd darth-phaser
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build</pre>
+    </div>
+  </section>
+
+  <footer>
+    <span>Rozan Audio</span>
+    <span><a href="https://github.com/hrozan/darth-phaser">github.com/hrozan/darth-phaser</a></span>
+  </footer>
+
+</div>
+</body>
+</html>

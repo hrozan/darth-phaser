@@ -1,0 +1,49 @@
+Darth Phaser - installation
+===========================
+
+This archive contains:
+
+  VST3/Darth Phaser.vst3     the plugin
+  Standalone/                a standalone app, for trying it without a DAW
+
+The build is unsigned, so each system needs a little persuading the first time.
+
+macOS
+-----
+Copy "Darth Phaser.vst3" to:
+
+    ~/Library/Audio/Plug-Ins/VST3/
+
+Because the build is not signed or notarised, Gatekeeper quarantines it after
+download. Clear that with:
+
+    xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/"Darth Phaser.vst3"
+
+Then rescan plugins in your DAW. The standalone app needs the same treatment if
+macOS refuses to open it; right-click it and choose Open the first time.
+
+Windows
+-------
+Copy "Darth Phaser.vst3" to:
+
+    C:\Program Files\Common Files\VST3\
+
+SmartScreen may warn about an unknown publisher the first time you run the
+standalone. Choose More info, then Run anyway.
+
+Linux
+-----
+Copy "Darth Phaser.vst3" to:
+
+    ~/.vst3/
+
+Make the standalone executable if needed:
+
+    chmod +x Standalone/"Darth Phaser"
+
+Build it yourself instead
+-------------------------
+    git clone https://github.com/hrozan/darth-phaser.git
+    cd darth-phaser
+    cmake -B build -DCMAKE_BUILD_TYPE=Release
+    cmake --build build
